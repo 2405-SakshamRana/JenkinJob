@@ -1,0 +1,78 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><project>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>5</daysToKeep>
+        <numToKeep>5</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>wfm_name</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>hostListArr=($(echo "$host_list_comma_separated" | tr "," " "))
+
+for host in ${hostListArr[@]}; do
+	if [ ! -z "$host" ]; then
+		
+        echo "starting update for $host"
+        sshpass -p "?:2t&gt;=9CGz\`#8gf" ssh -q -tt -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no 'engeeuser'@$host 'sudo sed -i "s/deployment_server_cname/keng01-oss01-log01-dps.int.oss-keng.mykronos.com/g" /apps/splunkforwarder/etc/apps/kronos_all_deployment_clients/local/deploymentclient.conf'
+		
+		count=$(sshpass -p "?:2t&gt;=9CGz\`#8gf" ssh -q -tt -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no 'engeeuser'@$host 'grep 'keng01-oss01-log01-dps.int.oss-keng.mykronos.com' /apps/splunkforwarder/etc/apps/kronos_all_deployment_clients/local/deploymentclient.conf|wc -l')
+		count1=$(echo $count | tr -d "\r")
+		
+		if [ $count1 -ge 1 ]; then
+			sshpass -p "?:2t&gt;=9CGz\`#8gf" ssh -q -tt -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no 'engeeuser'@$host 'sudo /apps/splunkforwarder/bin/splunk restart --accept-license'
+		else
+		   echo "updating targetUri = keng01-oss01-log01-dps.int.oss-keng.mykronos.com:8089 failed on node"
+		fi
+		
+		echo "ending update for $host"	
+	fi
+done</command>
+      <configuredLocalRules/>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@523.vd859a_4b_122e6">
+      <bindings>
+        <org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
+          <credentialsId>engperfuser</credentialsId>
+          <usernameVariable>engperfuser</usernameVariable>
+          <passwordVariable>PASSWORD</passwordVariable>
+        </org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
+      </bindings>
+    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+  </buildWrappers>
+</project>

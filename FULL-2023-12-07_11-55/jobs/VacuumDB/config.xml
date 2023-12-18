@@ -1,0 +1,97 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions/>
+  <description>&#13;
+    Generates Sql scripts that vacuum all the active schemas in your db by table. Vacuum for multiple schemas will be started in parallel.&#13;
+    </description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>15</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>db_server</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_name</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>vacuumDB_script_path</name>
+          <description>The relative path to the VaccumDB bash script starting from the GetPIntCode project workspace root directory.</description>
+          <defaultValue>bin/</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>common_schema_name</name>
+          <description>Provide the name of your common schema. Sometimes its a versioned name like common09_00.If you do not specify one, default name will be common.</description>
+          <defaultValue>common</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>
+timestamps 
+    {
+        node 
+            { 
+                stage('CleanWorkspace') 
+                    {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }
+                stage ('Copy required files from PIntCode project to workspace')
+                    {
+                        copyArtifacts filter: 'PIntCode/bin/vacuumDB.bash', projectName: 'GetPIntCode',selector: lastSuccessful()
+                        copyArtifacts filter: 'PIntCode/bin/util.db_pint.bash', projectName: 'GetPIntCode',selector: lastSuccessful()
+                    }
+                withCredentials([usernamePassword(credentialsId: 'engperfuser', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) 
+                    {
+                        stage('Execute vacuumDB bash')
+                            {
+                                sh '''
+                                    #!/bin/bash
+                                    source "${WORKSPACE}"/PIntCode/bin/util.db_pint.bash
+                                    export CACHEDIR=${WORKSPACE}
+                                    export db_server="${db_server}"
+                                    export db_name="${db_name}"
+                                    export common_schema="${common_schema_name}"
+                                    export db_username="tkcsowner"
+                                    export db_password="tkcsowner"
+                                    export bashscript_dir="${CACHEDIR}/PIntCode/${vacuumDB_script_path}"
+                                    echo "@Main(); $(date +"%T");  Version ${version}; Executing Vacuum DB bash script"
+                                    db_vacuumscript_execute
+                                '''   
+                            }
+                    } 
+            }
+    }    
+</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

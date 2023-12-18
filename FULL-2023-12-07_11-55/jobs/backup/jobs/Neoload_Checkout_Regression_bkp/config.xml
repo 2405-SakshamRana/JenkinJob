@@ -1,0 +1,61 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1145.v7f2433caa07f">
+  <actions/>
+  <description>This job checks out the selected branch of the "neoload" repository into 'C:\Users\superuser\Documents\NeoLoad Projects\neoload' on the remote Neoload Controller.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>Branch</name>
+          <description>Branch to use for checking out project, 'develop' by default.
+Repo: https://engstash.int.kronos.com/scm/per/neoload.git</description>
+          <defaultValue>develop</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.8">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2660.vb_c0412dc4e6d">
+    <script>// Neoload projects
+//50K_Combined_Warmup
+//50K_Combined_Main
+//50k_Reverts
+
+timestamps {
+
+    node ('pipeline-neoload_controller') { 
+        stage ('Checkout Neoload Project') 
+        {
+            dir("${workspace}") {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/${Branch}']], extensions: [[$class: 'CloneOption', timeout=900, honorRefspec: true, noTags: false, reference: 'E:\\neoload_reference_repo', shallow: true]], userRemoteConfigs: [[credentialsId: 'remote_git_creds', url: 'https://engstash.int.kronos.com/scm/per/neoload.git']]])
+            }       
+        }
+        stage ('Checkout OneClick_Automation jar') 
+        {
+            dir("${workspace}") {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/${Branch}']], extensions: [[$class: 'CloneOption', timeout=900, honorRefspec: true, noTags: false, reference: 'E:\\neoload_reference_repo', shallow: true]], userRemoteConfigs: [[credentialsId: 'remote_git_creds', url: 'https://engstash.int.kronos.com/scm/per/perf-automation.git']]])
+            }       
+        }stage('CleanWorkspace') {
+            cleanWs()
+        }
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

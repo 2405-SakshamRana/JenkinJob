@@ -1,0 +1,93 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions/>
+  <description>//Get confirmation from Vinay&#13;
+This is a pipeline Job that will download the code and will poll every hour to check if there is any update in the GIT Repo. </description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>5</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>branch</name>
+          <description>Please provide the branch which needs to be checkout</description>
+          <defaultValue>Vinay</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers>
+        <hudson.triggers.TimerTrigger>
+          <spec>@daily</spec>
+        </hudson.triggers.TimerTrigger>
+        <hudson.triggers.SCMTrigger>
+          <spec>H/1 * * * *</spec>
+          <ignorePostCommitHooks>false</ignorePostCommitHooks>
+        </hudson.triggers.SCMTrigger>
+      </triggers>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>
+            timestamps 
+            {
+                node ('master') 
+                {   
+                    stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }
+
+                    stage ('Checkout') 
+                    {
+                       echo "Branch Name: ${branch}"   
+                       checkout([$class: 'GitSCM', branches: [[name: '${branch}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory',
+                                   relativeTargetDir: 'PIntCode_new'],[$class: 'CloneOption', depth: 1, noTags: false, honorRefspec: true,  shallow: true ,timeout: 60]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'remote_git_creds', url: 'https://engstash.int.kronos.com/scm/per/perf-automation.git']]]) 
+                	
+                        sh """
+                        cd PIntCode_new/bin
+                        dos2unix util.monitor_pint.bash
+                        """
+                    }
+                    
+                    stage ('Archive') 
+            	    {
+                		archiveArtifacts allowEmptyArchive: false, artifacts: 'PIntCode_new\\**', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+                	}
+
+                	stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }						
+                    }
+                }
+            }
+         </script>
+    <sandbox>false</sandbox>
+  </definition>
+  <disabled>false</disabled>
+</flow-definition>

@@ -1,0 +1,10 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<org.jenkins.ci.plugins.jobimport.JobImportGlobalConfig plugin="job-import-plugin@3.6">
+  <sites>
+    <org.jenkins.ci.plugins.jobimport.model.JenkinsSite>
+      <name>perfautomation</name>
+      <url>http://perfautomation.int.kronos.com:8080</url>
+      <defaultCredentialsId>8f812eb3-acd9-4b19-a042-1f1c83377fb7</defaultCredentialsId>
+    </org.jenkins.ci.plugins.jobimport.model.JenkinsSite>
+  </sites>
+</org.jenkins.ci.plugins.jobimport.JobImportGlobalConfig>

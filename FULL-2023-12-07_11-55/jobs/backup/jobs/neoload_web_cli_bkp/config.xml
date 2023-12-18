@@ -1,0 +1,134 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1145.v7f2433caa07f">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.9.3"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.9.3">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>zone_id</string>
+        <string>api_url</string>
+        <string>token</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>token</name>
+          <description>Neoload Web Token</description>
+          <defaultValue>specify_token_or_get_it_from_credentials</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>zone_id</name>
+          <description>Zone identifier</description>
+          <defaultValue>defaultzone</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>api_url</name>
+          <description>NeoLoad Web Api Url</description>
+          <defaultValue>https://neoload-api.saas.neotys.com/</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.8">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2660.vb_c0412dc4e6d">
+    <script>pipeline {
+  agent none
+
+  parameters {
+    string(defaultValue: "specify_token_or_get_it_from_credentials", description: 'Neoload Web Token', name: 'token')
+    string(defaultValue: "defaultzone", description: 'Zone identifier', name: 'zone_id')
+    string(defaultValue: "https://neoload-api.saas.neotys.com/", description: 'NeoLoad Web Api Url', name: 'api_url')
+  }
+
+  stages {
+    stage('Attach Worker') {
+      agent {
+        docker {
+          image 'python:3-alpine'
+        }
+      }
+      environment {
+        NEOLOAD="${WORKSPACE}/.local/bin/neoload"
+        HOME="${WORKSPACE}"
+      }
+      stages {
+        stage('Get NeoLoad CLI') {
+          steps {
+              echo "work : ${WORKSPACE}"
+              sh "python3 -m pip install --upgrade pip"
+              sh "pip install --upgrade wheel"
+              sh "pip install neoload"
+              sh "$NEOLOAD --version"
+          }
+        }
+      /* stage('Get NeoLoad project'){
+            steps {
+                sh ' wget https://engstash.int.kronos.com/projects/PER/repos/neoload/browse/shift_left/50k_automation/Shift_Left_50k_Automation.zip?at=refs%2Fheads%2Fdevelop'
+            }
+        }*/
+        stage('Prepare NeoLoad test') {
+          steps {
+              sh """$NEOLOAD \
+              
+                     login --url ${params.api_url} ${params.token} \
+                     test-settings --zone ${params.zone_id} --scenario 'dataview_scenario' createorpatch "My Jenkins Test With CLI" \
+                   
+                     
+                    neoload test-settings use Test
+                    neoload test-settings use b19c0ab4-4e75-49b5-a05b-b4516434a208
+                """
+          }
+        }
+        stage('Run Test') {
+          steps {
+              sh """$NEOLOAD run \
+                  --name "Jenkins pipeline performance regression test ${BUILD_NUMBER}" \
+                  --external-url '${BUILD_URL}' \
+                  --external-url-label 'Jenkins build ${BUILD_NUMBER}' \
+                  --description "Jenkins result description" \
+                  --return-0 \
+                  --web-vu 50 \
+                 """
+          }
+        }
+        stage('Generate Test Report') {
+          steps {
+             sh "$NEOLOAD test-results junitsla"
+          }
+          post {
+              always {
+                  junit 'junit-sla.xml'
+              }
+          }
+        }
+      }
+    }
+  }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

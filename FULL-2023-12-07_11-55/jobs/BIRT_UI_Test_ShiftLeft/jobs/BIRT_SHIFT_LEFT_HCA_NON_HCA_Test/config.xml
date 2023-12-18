@@ -1,0 +1,235 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2118.v31fd5b_9944b_5"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2118.v31fd5b_9944b_5">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>zone_id</string>
+        <string>api_url</string>
+        <string>token</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>15</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>token</name>
+          <description>Neoload Web Token</description>
+          <defaultValue>sJprmtTyQL5YRUqdVG4hQkPl</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>api_url</name>
+          <description>NeoLoad Web Api Url</description>
+          <defaultValue>http://neoload-web-api.int.acd.mykronos.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>zone_id</name>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>dynamic_zone</string>
+              <string>Regression Zone</string>
+              <string>Default zone</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Email</name>
+          <defaultValue>saksham.rana@ukg.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>id</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_type</name>
+          <defaultValue>birt_schedule</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>dbname</name>
+          <defaultValue>ppas_birtr5</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>dbserver</name>
+          <defaultValue>kacd02-prf01-ins01-wfm57-dbs-01.int.acd.mykronos.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>start_time</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>schdule_time</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>end_time</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>tenants_list</name>
+          <defaultValue>meijercompanies03_int_01,birtvap12599_int_01,birtvap13299_int_01,lbranddec12tnr799_int_01,lbranddec12tnr899_int_01</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>def id = System.currentTimeMillis()
+env.id = id
+
+
+
+node('master') {
+    stage('Checkout') {
+        //def start_time = new Date().format("yyyy-MM-dd HH:mm", TimeZone.getTimeZone("UTC"))
+        
+        echo "Branch Name: Vinay"
+        checkout([$class: 'GitSCM', branches: [[name: 'Vinay']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory' ,relativeTargetDir: 'NeoLoadCode'],[$class: 'CloneOption', depth: 1, noTags: false, honorRefspec: true,  shallow: true ,timeout: 180]], submoduleCfg: [], userRemoteConfigs: [[refspec: '+refs/heads/Vinay:refs/remotes/origin/Vinay', credentialsId: 'remote_git_creds', url: 'https://engstash.int.kronos.com/scm/per/perf-automation.git']]])
+        
+        //env.start_time=start_time
+    }
+    
+    stage('Send Email with Current US Time') {
+	        def schdule_time = new Date().format("yyyy-MM-dd HH:mm", TimeZone.getTimeZone("UTC"))
+	        
+	        build job: 'child_jobs/Scheduletime'
+	        env.schdule_time = schdule_time
+	       
+	        
+	        
+    }
+    
+    stage('Build and Execute JAR') {
+        def schedule_time_report=env.schdule_time
+        //def adhoc_time_report = schedule_time_report
+        
+        script {
+                def sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm")
+                Date date = sdf.parse(schedule_time_report)
+                
+                long newTimeInMillis1 = date.time + (40 * 60 * 1000)
+                Date newDate1 = new Date(newTimeInMillis1)
+                
+                
+                long newTimeInMillis2 = date.time + (720 * 60 * 1000)
+                Date newDate2 = new Date(newTimeInMillis2)
+                
+                def adhoc_time_report = sdf.format(newDate1)
+                def end_time_report = sdf.format(newDate2)
+
+                
+                println "Schedule Time: $schedule_time_report"
+                println "Adhoc Time: $adhoc_time_report"
+                println "End Time: $end_time_report"
+                
+                sh """ 
+                         #!/bin/bash 
+                         pwd
+        cd NeoLoadCode/Performance/ss_regression/code/
+        pwd
+        ls
+        chmod 777 insert_start_job_data.jar
+          java -jar insert_start_job_data.jar "$id" "$test_type" "$dbname" "$dbserver" "$schedule_time_report" "$adhoc_time_report" "$end_time_report" "$tenants_list"
+   """
+                }
+    }
+    
+
+	
+    stage('Neoload_executetest_cli_schedule') {
+        try{
+		build job: 'child_jobs/Neoload_ExecuteTest_CLI',
+	    //def neoload = build(job: 'Neoload_ExecuteTest_CLI',
+		parameters: [string(name: 'Workspace_Name', value: "Platform"),
+		string(name: 'Project', value: "BIRT_SHIFT_LEFT_HCA_NON_HCA_Test_Schedule"),
+		string(name: 'Scenario', value: "BIRT_Scheule_Reports_20k"),
+		string(name: 'Load_Generators', value: "5"),
+		string(name: 'Vusers', value: "50")
+		]
+        }
+        catch(Exception e)
+        {
+            
+        }
+        finally
+        {
+            int dur=currentBuild.duration/1000
+            println(dur)
+            if(dur&lt;900)
+            {
+                int time =900-dur
+                sleep(time)
+            }
+        }
+    }
+
+
+
+    stage('Waiting for Job'){
+		    build job: 'child_jobs/WaitingJob'
+	}
+	
+	
+/*	stage('Send Email with Current US Time') {
+	        def schdule_time = new Date().format("yyyy-MM-dd HH:mm", TimeZone.getTimeZone("UTC"))
+	        
+	        build job: 'child_jobs/Scheduletime'
+	        env.schdule_time = schdule_time
+	        
+	        
+    }*/
+    
+    sleep 600
+    
+    
+    stage('Neoload_executetest_cli_adhoc') {
+	build job: 'child_jobs/Neoload_ExecuteTest_CLI',
+	//def neoload = build(job: 'Neoload_ExecuteTest_CLI',
+	parameters: [string(name: 'Workspace_Name', value: "Platform"),
+	string(name: 'Project', value: "BIRT_SHIFT_LEFT_HCA_NON_HCA_Test_Adhoc"),
+	string(name: 'Scenario', value: "BIRT_Adhoc_Reports_20K"),
+	string(name: 'Load_Generators', value: "5"),
+	string(name: 'Vusers', value: "50")
+	]
+    }
+    
+
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

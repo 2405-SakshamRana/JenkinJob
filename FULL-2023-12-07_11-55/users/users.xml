@@ -1,0 +1,50 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<hudson.model.UserIdMapper>
+  <version>1</version>
+  <idToDirectoryNameMap class="concurrent-hash-map">
+    <entry>
+      <string>tulika.kumari</string>
+      <string>tulikakumari_4003753146816081498</string>
+    </entry>
+    <entry>
+      <string>abhishek.jain</string>
+      <string>abhishekjain_1054178840185259421</string>
+    </entry>
+    <entry>
+      <string>doug.tilkin</string>
+      <string>DougTilkin_41887325540619067</string>
+    </entry>
+    <entry>
+      <string>neha.kumari</string>
+      <string>nehakumari_213859653538777362</string>
+    </entry>
+    <entry>
+      <string>vinay.sharma</string>
+      <string>vinaysharma_6788965782614150709</string>
+    </entry>
+    <entry>
+      <string>thara.vadakkeveedu</string>
+      <string>tharavadakkeve_9486483331581697729</string>
+    </entry>
+    <entry>
+      <string>admin</string>
+      <string>admin_5251306429342509018</string>
+    </entry>
+    <entry>
+      <string>hingtung.tsang</string>
+      <string>hingtungtsang_4020866799146797573</string>
+    </entry>
+    <entry>
+      <string>saksham.rana</string>
+      <string>sakshamrana_2422187748837802322</string>
+    </entry>
+    <entry>
+      <string>ashish.goel</string>
+      <string>ashishgoel_5654692102899222145</string>
+    </entry>
+    <entry>
+      <string>anthony.walker</string>
+      <string>anthonywalker_1807703585186789618</string>
+    </entry>
+  </idToDirectoryNameMap>
+</hudson.model.UserIdMapper>

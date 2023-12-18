@@ -1,0 +1,124 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1145.v7f2433caa07f">
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.TextParameterDefinition>
+          <name>email_recipients</name>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>neoload_startup_time</name>
+          <defaultValue>00:0.5</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ramup_time</name>
+          <defaultValue>00:20</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>steady_state_duration</name>
+          <defaultValue>00:60</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.8">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2660.vb_c0412dc4e6d">
+    <script>// Powered by Infostretch 
+
+timestamps {
+
+node () {
+    def jar_path = "PIntCode/kronos"
+  /*  def neoload_startup_time="00:0.5"
+    def ramup_time="00:01"
+    def steady_state_duration="00:05"*/
+      
+      	stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }  
+        stage('unique') {
+            if ("${params.unique}" != 'null')
+                {
+                    echo "Unique ID copied ${params.unique}"
+                    env.unique = "${params.unique}"
+                }
+            else 
+                {
+                    env.unique = System.currentTimeMillis()
+                    echo "Unique ID new ${env.unique}"
+                }
+           }
+       
+        stage ("Copy SQL Files from PIntCode project") {
+            script{
+                echo "Copy required jar files."
+                copyArtifacts filter: "${jar_path}/steady_state_cpu.jar", projectName: 'GetPIntCode',selector: lastSuccessful()
+               copyArtifacts filter: "${jar_path}/src/test/resources/**.*", projectName: 'GetPIntCode',selector: lastSuccessful()
+            }
+        }
+
+	    stage ('Nmon_Steady_State_CPU_Extract - Build') {
+ 			// Shell build step
+            sh """ 
+                #!/bin/bash 
+               
+                echo ${env.unique}
+                echo $email_recipients
+            
+                mkdir nmon_extract_cpu_steady_state_stats/
+                cd ${jar_path}
+                java -jar steady_state_cpu.jar "/usr/local/data/${env.unique}/nmon_logs/" "${params.neoload_startup_time}" "${params.ramup_time}" "${params.job_start_time}" "${params.steady_state_duration}"  "$email_recipients" 
+                 """            
+	    }
+	
+	    stage ('Publish HTML Report') {
+            publishHTML([allowMissing: false,  alwaysLinkToLastBuild: false, keepAll: true, reportDir: "/usr/local/data/${env.unique}/nmon_logs/report/", reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: ''])
+    	}
+    	
+    	stage('copy folder to workspace') {
+    	    fileOperations([folderCopyOperation(destinationFolderPath: "${WORKSPACE}/nmon_extract_cpu_steady_state_stats", sourceFolderPath: "/usr/local/data/${env.unique}")])
+    	// sh 'tar -czvf nmon_extract_cpu_steady_state_stats.zip ${WORKSPACE}/nmon_extract_cpu_steady_state_stats/*'
+    	    
+    	}
+    
+    	stage ('Archieve') {
+    		archiveArtifacts allowEmptyArchive: false, artifacts: 'nmon_extract_cpu_steady_state_stats/**', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+    	}
+    	stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }
+}
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

@@ -1,0 +1,152 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions/>
+  <description>Execute NeoLoad test/ works developed by Pipeline team</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>Branch</name>
+          <description>Branch to use for checking out project, develop by default. Project is located at repo: https://engstash.int.kronos.com/projects/PER/repos/neoload/browse</description>
+          <defaultValue>develop</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Project</name>
+          <description>Relative path from the repository root neoload to zip containing the .nlp file.For example, \shift_left\50k_automation</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Scenario</name>
+          <description>Name of scenario to be executed, in case of multiple scenarios please input comma separated values.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Users</name>
+          <description>If using a shared license, the number of virtual users to lease</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Duration</name>
+          <description>If using a shared license, the duration of the lease (how many hours the test will run for)</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Submitter</name>
+          <description>firstname.lastname@ukg.com</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+    <org.jenkinsci.plugins.neoload.integration.supporting.SimpleBuildOption plugin="neoload-jenkins-plugin@2.2.11">
+      <showTrendAverageResponse>true</showTrendAverageResponse>
+      <showTrendErrorRate>true</showTrendErrorRate>
+      <maxTrends>0</maxTrends>
+      <scanAll>false</scanAll>
+    </org.jenkinsci.plugins.neoload.integration.supporting.SimpleBuildOption>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>
+            timestamps {
+                node ('pipeline-neoload_controller') { 
+                    //NTS license can be found by logging into http://wfd-tc530:8080/#!licenses (admin/admin)
+                    def NeotysTeamLicense='MCwCFBPKpem5ckDMZqNUmrH/eZQqzXarAhRo62I0Mlj+GmjQR07vhO51DCoiuQ=='
+                    def Neoload_Dir = "C:\\Users\\superuser\\Documents\\NeoLoad Projects"
+                    def Neoload_Exe  = "C:\\Program Files\\NeoLoad 7.11\\bin\\NeoLoadCmd"
+					def projectzip = "${env.WORKSPACE}${env.Project}"
+                    def Project_Path = "${env.Project}"- ~/\.\w+$/
+                    def projectpath = "${env.WORKSPACE}${Project_Path}"
+                    def Project_Name1 = "${Project_Path}"- ~/\\\w+/
+                    def Project_Name2 = "${Project_Name1}"- ~/\\\w+/   
+                    def projectname = "${Project_Name2}".replaceAll("[^a-zA-Z0-9 _]+","")                   
+
+                    stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }
+
+                	stage ('Checkout Code') {
+             	        checkout([$class: 'GitSCM', branches: [[name: '*/${Branch}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, noTags: false, honorRefspec: true, reference: 'C:\\\\neoload_reference_repo', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[refspec: '+refs/heads/Saksham:refs/remotes/origin/Saksham', credentialsId: 'remote_git_creds', url: 'https://engstash.int.kronos.com/scm/per/neoload.git']]]) 
+                	}
+
+                    stage ('Unzip project') {
+                        dir("${workspace}") {
+                            unzip dir: "${projectpath}", glob: '', zipFile: "${projectzip}"
+                        }  
+                    }
+
+                    stage ('Execute Neoload Scenario') {
+                        sh """
+                        echo "currentDate=`date +"%H:%M:%S" -u`" &gt; env.props
+                         """ 
+                        prop = readProperties file:'env.props'
+                        prop.each{key, value -&gt;
+                            env[key] = value
+                        }
+ 			long start=currentBuild.startTimeInMillis/1000
+                        sh """
+                         echo "start_TimeStamp= ${start}" &gt; env.props
+                        """
+                	prop = readProperties file:'env.props'
+                        prop.each{key, value -&gt;
+                            env[key] = value
+                        }
+                        //println ${env.currentDate}
+                        //println "current time value is ${env.currentDate}"
+                        echo "server info: http://wfd-tc530.int.kronos.com:8080, User: vinay.sharma@ukg.com, LicenseId:admin"
+                        neoloadRun executable: "${Neoload_Exe}", 
+                        // project: "${projectpath}\\${projectname}.nlp",
+                            project: "${projectpath}\\Shared_Service_Regression.nlp", 
+                            testDescription: "${projectname} (build ${BUILD_NUMBER})", 
+                            scenario: "${Scenario}", 
+                            sharedLicense: [
+                                server: "http://wfd-tc530:8080, User: vinay.sharma@ukg.com, LicenseId:admin", 
+                                duration: "${Duration}", 
+                                vuCount: "${Users}"
+                            ], 
+                            trendGraphs: ['AvgResponseTime', 'ErrorRate']
+                        bat 'tar.exe -a -cf neoload-report.zip neoload-report/*'
+                    }
+		    stage ('Retrieve End Time'){
+                        println(currentBuild.startTimeInMillis/1000)
+                        println(currentBuild.duration/1000)
+                	long start=currentBuild.startTimeInMillis/1000
+                	int dur=currentBuild.duration/1000
+                	endTime=start+dur
+                	sh """
+                      echo "endTime = ${endTime}" &gt; env.props
+                      """
+                        prop = readProperties file:'env.props'
+                        prop.each{key, value -&gt;
+                            env[key] = value
+                        }
+                       println "endTime from env file :${env.endTime}"
+                	}
+                    
+                    stage ('Archieve'){
+                		archiveArtifacts artifacts: 'neoload-report.zip', followSymlinks: false 
+                	}
+                }
+            }
+         </script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

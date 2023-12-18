@@ -1,0 +1,108 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1145.v7f2433caa07f">
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>backend</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>frontend</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>bgp_node</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>api_node</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_server</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.8">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2660.vb_c0412dc4e6d">
+    <script>// Powered by Infostretch 
+
+timestamps {
+
+    node ('master || linux_node') { 
+        stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }
+        stage ("Copy required Files from PIntCode project"){
+            script{
+                echo "Copy util.monitor.bash from GetPIntCode workspace"
+                copyArtifacts filter: 'PIntCode/bin/util.monitor_pint.bash', projectName: 'GetPIntCode',selector: lastSuccessful()
+            }
+        }    
+    	stage ('find_allservers') {
+            withCredentials([
+                usernamePassword(credentialsId: 'engperfuser', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME'),
+            ]) {
+                sh '''
+                #!/bin/bash
+                set -exo pipefail
+                source "${WORKSPACE}"/PIntCode/bin/util.monitor_pint.bash
+                
+                #System information
+                export USERNAME="${USERNAME}"
+                export PASSWORD="${PASSWORD}"
+                export context_description=$(echo ${backend} | cut -d "," -f1 | grep -Eo "(ins[0-9]+-)*wfm[0-9]+")
+                export CACHEDIR="${WORKSPACE}"
+                
+                export Frontend="${frontend}"
+                export backend="${backend},${api_node}"
+                export bgp_backend="${bgp_node}"
+                export db_server="${db_server}"
+                echo $HOME/deployment/${context_description}
+                rm -rf $HOME/deployment/${context_description}
+                _monitor_share_services_information
+                allservers=$(echo ${allservers} | tr -s " " | sed 's/ /,/g')
+                echo "allservers=${allservers}" &gt; allservers.txt 
+                 '''
+            }
+    	}
+    	stage('Inject environment variables'){
+    	    prop = readProperties file:'allservers.txt'
+    	    prop.each{key, value -&gt;
+    	        env[key] = value
+    	    }
+    	stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }    
+    	}
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

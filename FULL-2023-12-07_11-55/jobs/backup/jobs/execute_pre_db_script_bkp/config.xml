@@ -1,0 +1,101 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1145.v7f2433caa07f">
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>20</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.plugins.copyartifact.CopyArtifactPermissionProperty plugin="copyartifact@1.46.3">
+      <projectNameList>
+        <string>*</string>
+      </projectNameList>
+    </hudson.plugins.copyartifact.CopyArtifactPermissionProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>db_server</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_name</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>pre_db_script_path</name>
+          <description>The relative path to to the pre_test_counts.sql starting from the GetPIntCode project workspace root directory.</description>
+          <defaultValue>bin/sqlscript/</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.8">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2660.vb_c0412dc4e6d">
+    <script>timestamps {
+    node{ 
+        stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }
+        stage ("Copy required files from PIntCode project to workspace "){
+            script{
+                copyArtifacts filter: 'PIntCode/${pre_db_script_path}/*.*', projectName: 'GetPIntCode',selector: lastSuccessful()
+                copyArtifacts filter: 'PIntCode/bin/util.db_pint.bash', projectName: 'GetPIntCode',selector: lastSuccessful()
+            }
+        }
+       // withCredentials([usernamePassword(credentialsId: 'engperfuser', passwordVariable: '?XHw)N\'tDUJ4D\'R', usernameVariable: 'USERNAME')]) {
+        withCredentials([usernamePassword(credentialsId: 'engperfuser', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+          //  sh 'echo $PASSWORD'
+         //   echo "username is $USERNAME"
+            stage("Execute PreDB SQL"){
+                sh '''
+                    #!/bin/bash
+                    source "${WORKSPACE}"/PIntCode/bin/util.db_pint.bash
+                    export CACHEDIR=${WORKSPACE}
+                    export db_server="${db_server}"
+                    export db_name="${db_name}"
+                    export db_username="tkcsowner"
+                    export db_password="tkcsowner"
+                    export sqlscript_dir="${CACHEDIR}/PIntCode/${pre_db_script_path}/"
+                    echo "@Main(); $(date +"%T");  Version ${version}; Executing Pre DB Script"
+                    db_sqlscript_execute
+                '''    
+            }
+        }    
+        stage ('Archieve'){
+    		archiveArtifacts allowEmptyArchive: false, artifacts: 'sqloutput/*.*', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+    	    }
+    	stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

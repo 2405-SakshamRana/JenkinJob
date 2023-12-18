@@ -1,0 +1,396 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions>
+    <org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction plugin="workflow-multibranch@716.vc692a_e52371b_">
+      <jobPropertyDescriptors>
+        <string>hudson.model.ParametersDefinitionProperty</string>
+        <string>jenkins.model.BuildDiscarderProperty</string>
+      </jobPropertyDescriptors>
+    </org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction>
+  </actions>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>5</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>true</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>deploy_wfm_1</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Provide below details to deploy new WFM</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>deploy_wfm</name>
+          <description>Please provide if you want to Deploy</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>skip_setup</name>
+          <description>This parameter will skip all the environmental setup piece and just start executing the tests.</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>release</name>
+          <defaultValue>r9int</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>cluster_id</name>
+          <defaultValue>50</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_server</name>
+          <defaultValue>kacd02-prf05-ins01-wfm07-dbs-01.int.acd.mykronos.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_name</name>
+          <defaultValue>ppas_50k</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>destroy_wfm</name>
+          <description>Check this if you want to destroy the existing wfm.</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>wfc_stream</name>
+          <defaultValue>r9int</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>web_stream</name>
+          <defaultValue>r9int</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>environment_name</name>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>PRF - Performance</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>unique_tag</name>
+          <description>Unique tag to identify the WFMs in a particular environment. For Performnace Shift Left, unique tag will be "perf_SL". For Performnace Core, unique tag will be "perf_Core". For Performnace 500K, unique tag will be "perf_500K".</description>
+          <defaultValue>perf_SL</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>extra_inputs</name>
+          <defaultValue>{"instance_id": "50", "redis_hosts": "kacd02-prf05-ins01-wfm06-dmc-1.int.acd.mykronos.com:26379,kacd02-prf05-ins01-wfm06-dmc-2.int.acd.mykronos.com:26381,kacd02-prf05-ins01-wfm06-dmc-3.int.acd.mykronos.com:26382", "redis_master": "kacd02-prf05-ins01-wfm06-dmc-1.int.acd.mykronos.com", "enable_monitoring": "True","build_level_dfi": "09d05d00","docker_build_level_ilb": "09.05.00","sa_num": "bck=1,bgp=1,bgi=0,fnt=1,api=1,udm=0","datastx_analytic_nodes":"kacd02-prf05-ins01-fcs05-nsq-1.int.acd.mykronos.com","astra_zdm_nodes":"","sch_redis_hosts":"","sch_redis_master":""}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>neload_test_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>ACD HA WFM details.</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>branch</name>
+          <description>Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where all the scripts are located. All the code and all the Neoload scripts should be in the same branch</description>
+          <defaultValue>develop</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>submitter</name>
+          <description>As firstname.lastname@kronos.com</description>
+          <defaultValue>tulika.kumari@ukg.com,abhishek.jain@ukg.com,arash.yamin@ukg.com,doug.tilkin@ukg.com,john.woolley@ukg.com,karl.paxton@ukg.com,lilin.tan@ukg.com,mahdi.alhady@ukg.com,,moses.chang@ukg.com,paul.sullivan@ukg.com,saurabh.tyagi@ukg.com,thara.vadakkeveedu@ukg.com,hingtung.tsang@ukg.com,tri.la@ukg.com,vishwanth.krish@ukg.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>nmon_iteration</name>
+          <description>Can not be empty</description>
+          <defaultValue>12600</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>nmon_interval</name>
+          <description>Can not be empty</description>
+          <defaultValue>2</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>warm_up_script_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of Warm Up Neoload script, leave these empty to skip.</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_project_path</name>
+          <description>Path of a zip file containing .nlp file, relative to the workspace. Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where warmup scripts are located.</description>
+          <defaultValue>SL_50k_Warmup_PublicAPI</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_scenario</name>
+          <description>Name of warmup scenario in the project, in case of multiple scenarios please input comma separated values.</description>
+          <defaultValue>50k_Combined_Warmup</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_users_count</name>
+          <description>User count for license</description>
+          <defaultValue>301</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_lg</name>
+          <description>LG required</description>
+          <defaultValue>8</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>database_script_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of Database script, leave these empty to skip.</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>pre_db_script_path</name>
+          <description>Path relative "performance/bin" directory</description>
+          <defaultValue>bin/sqlscript/50k_sl_prevalidation</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>post_db_script_path</name>
+          <description>Path relative "performance/bin" directory</description>
+          <defaultValue>bin/sqlscript/50k_sl_postvalidation</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>test_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of Main 50K Test. Leave these empty to skip</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ZipFileName</name>
+          <description>The name of the zip file contain your jmx file, batch file and seed data without .zip</description>
+          <defaultValue>PublicRegressionAPIs</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>BatchFileName</name>
+          <description>Name of the batch file for JMeter Execution without the .bat</description>
+          <defaultValue>RunPublicRegressionTestAPIs</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Scheduling_ZipFileName</name>
+          <description>The name of the zip file contain your jmx file, batch file and seed data without .zip</description>
+          <defaultValue>HC_PublicRegressionAPIs</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Scheduling_BatchFileName</name>
+          <description>Name of the batch file for JMeter Execution without the .bat</description>
+          <defaultValue>RunHCPublicRegressionTestAPIs</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_project_path</name>
+          <description>Provide the path of the zip file which contains the .nlp file, relative to the Git Repository</description>
+          <defaultValue>SL_50k_MainTest</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_scenario</name>
+          <description>Provide the Scenario Name which needs to be executed, in case of multiple scenarios, input comma-separated values.</description>
+          <defaultValue>50k_Combined_MainTest</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_users_count</name>
+          <description>Provide the number of users for which the license needs to be leased.</description>
+          <defaultValue>510</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_lg</name>
+          <description>Provide the number of LG</description>
+          <defaultValue>12</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>WFM_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of 50k WFM</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_cluster</name>
+          <description>Provide Db Cluster ID</description>
+          <defaultValue>07</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>revert_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of 50k Revert Test Script. Leave these empty to skip</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_project_path</name>
+          <description>Provide the path of the zip file which contains the .nlp file, relative to the Git Repository</description>
+          <defaultValue>Reverts</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_scenario</name>
+          <description>Provide the Scenario Name which needs to be executed, in case of multiple scenarios, input comma-separated values.</description>
+          <defaultValue>50k_Revert</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_users_count</name>
+          <description>Provide the number of users for which the license needs to be leased.</description>
+          <defaultValue>220</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_lg</name>
+          <description>Provide the the lg</description>
+          <defaultValue>10</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@4.12.1">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>https://engstash.int.kronos.com/scm/per/perf-automation.git</url>
+          <credentialsId>8563adab-fbc7-40ab-a95f-1462253842e0</credentialsId>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>develop</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <submoduleCfg class="empty-list"/>
+      <extensions>
+        <hudson.plugins.git.extensions.impl.CloneOption>
+          <shallow>true</shallow>
+          <noTags>false</noTags>
+          <reference/>
+          <timeout>90</timeout>
+          <depth>1</depth>
+          <honorRefspec>true</honorRefspec>
+        </hudson.plugins.git.extensions.impl.CloneOption>
+        <hudson.plugins.git.extensions.impl.CheckoutOption>
+          <timeout>90</timeout>
+        </hudson.plugins.git.extensions.impl.CheckoutOption>
+        <hudson.plugins.git.extensions.impl.SparseCheckoutPaths>
+          <sparseCheckoutPaths>
+            <hudson.plugins.git.extensions.impl.SparseCheckoutPath>
+              <path>jenkins/_Full_Workflow_Perf50k_web_HD.groovy</path>
+            </hudson.plugins.git.extensions.impl.SparseCheckoutPath>
+          </sparseCheckoutPaths>
+        </hudson.plugins.git.extensions.impl.SparseCheckoutPaths>
+      </extensions>
+    </scm>
+    <scriptPath>jenkins/_Full_Workflow_Perf50k_web_HD.groovy</scriptPath>
+    <lightweight>false</lightweight>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

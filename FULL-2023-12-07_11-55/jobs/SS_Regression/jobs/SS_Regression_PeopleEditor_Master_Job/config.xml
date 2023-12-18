@@ -1,0 +1,161 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions>
+    <org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction plugin="workflow-multibranch@716.vc692a_e52371b_">
+      <jobPropertyDescriptors>
+        <string>hudson.model.ParametersDefinitionProperty</string>
+        <string>jenkins.model.BuildDiscarderProperty</string>
+      </jobPropertyDescriptors>
+    </org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit></paramsToUseForLimit>
+      <configVersion>1</configVersion>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>Email</name>
+          <defaultValue>saksham.rana@ukg.com,vinay.sharma@ukg.com,saurabh.tyagi@ukg.com,manas.kumar@ukg.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>def uniq_id = System.currentTimeMillis()
+env.uniq_id = uniq_id
+// Main Method starts here
+node (&apos;master&apos;) { 
+    label &apos;master || linux_node&apos;
+	properties([
+		buildDiscarder(logRotator(numToKeepStr: &apos;10&apos;)),
+		parameters([
+		string(name: &apos;Email&apos;, defaultValue: &apos;saksham.rana@ukg.com,vinay.sharma@ukg.com,saurabh.tyagi@ukg.com,manas.kumar@ukg.com&apos;)
+		])])  
+
+
+//MAIN execution
+
+stage(&apos;Fetch WFM Details&apos;) { 
+        def build_result = build(job: &apos;Fetch_deployment_Details&apos;, parameters: [string(name: &apos;EXECUTION_NAME&apos;, value: &apos;WFM_HA_PIPELINE [wfm_10] [ins_01] [perf_SL]&apos;)])
+        println &quot;${build_result.number}&quot;
+		env.fnt = build_result.getBuildVariables().get(&apos;fnt&apos;)
+		env.bck = build_result.getBuildVariables().get(&apos;bck&apos;)
+		env.api = build_result.getBuildVariables().get(&apos;api&apos;)
+		env.bgp = build_result.getBuildVariables().get(&apos;bgp&apos;)
+		env.db_server = build_result.getBuildVariables().get(&apos;param_dbserver&apos;)
+		env.db_name = build_result.getBuildVariables().get(&apos;param_dbname&apos;)
+		println env.fnt + &quot;,&quot; + env.bck + &quot;,&quot; + env.api + &quot;,&quot; + env.bgp + &quot;,&quot; + env.db_server + &quot;,&quot; + env.db_name
+		if (!fnt || !bck || !api || !bgp || !db_server || !db_name)
+			throw new Exception(&quot;fnt/bgp/api/bck/param_dbserver could not be found!&quot;)
+		copyArtifacts(projectName: &apos;Fetch_deployment_Details&apos;, selector: specific(&quot;${build_result.number}&quot;))
+	}
+	fnt += env.fnt
+	bck += env.bck
+	api += env.api
+	bgp += env.bgp
+	db_server = env.db_server
+	db_name = env.db_name
+	//echo &quot;front:&quot;+fnt+&quot;\nback:&quot;+bck+&quot;\napi:&quot;+api+&quot;\nbgp:&quot;+bgp+&quot;\ndb_server:&quot;+db_server+&quot;\ndb_name:&quot;+db_name
+
+stage(&quot;Create users on WFM nodes&quot;) {
+		def wfm_nodes = []
+		wfm_nodes += env.fnt
+		wfm_nodes += env.bck
+		wfm_nodes += env.api
+		wfm_nodes += env.bgp
+		wfm_nodes += env.db_server
+		println &quot;wfm_nodes: &quot; + wfm_nodes.toString()
+        script {
+          def allJobs = [:]
+          for(def curJob=0; curJob&lt;wfm_nodes.size(); curJob++) {
+			def jobName = wfm_nodes[curJob]
+            allJobs[jobName] =  {
+			  stage(jobName) {
+				build (job: &quot;create_default_users&quot;,
+                    parameters:
+                    [string(name: &apos;PROJECT&apos;, value: &quot;gce_automation_cd&quot;), string(name: &apos;SERVER_NAME&apos;, value: jobName)])
+			}
+            }
+          }
+          parallel(allJobs)
+        }   
+    }
+	
+	
+
+	stage(&apos;server_health_check&apos;) {
+		 server_health_check_build = build(job: &apos;server_health_check_SS_Regression&apos;,
+		parameters: [string(name: &apos;nmon_interval&apos;, value: &quot;1&quot;),
+		string(name: &apos;nmon_iteration&apos;, value: &quot;3600&quot;),
+		string(name: &apos;servers_fqdn&apos;, value: &quot;${env.fnt},${env.bck},${env.api},${env.bgp},${env.db_server}&quot;),
+		string(name: &apos;unique&apos;, value: &quot;${env.uniq_id}&quot;),
+		string(name: &apos;email_recipients&apos;, value: &quot;${params.Email}&quot;)
+		])
+}
+	stage(&apos;Load_Test_Execution&apos;) 
+                    {
+                                        cleanWs()
+
+                       def Jmeter = build(job: &apos;Jmeter_Execution_Pipeline_Job&apos;,
+                        parameters: [string(name: &apos;Script_name&apos;, value: &quot;pe.jmx&quot;)
+                            ])
+                            
+							 env.Start_TIME = Jmeter.getBuildVariables().get(&apos;startTime&apos;)
+                             env.End_TIME = Jmeter.getBuildVariables().get(&apos;endTime&apos;)
+                             	println(&quot;${env.Start_TIME}&quot;)
+					println(&quot;${env.End_TIME}&quot;)
+						copyArtifacts(projectName: &apos;Jmeter_Execution_Pipeline_Job&apos;, selector: specific(&quot;${Jmeter.number}&quot;))
+                     archiveArtifacts artifacts: &apos;*.props&apos;, followSymlinks: false 
+                     archiveArtifacts artifacts: &apos;NeoLoadCode/Performance/ss_regression/result/jmeter_html_report/*&apos;, followSymlinks: false 
+                        
+                    }
+					println(&quot;${env.Start_TIME}&quot;)
+					println(&quot;${env.End_TIME}&quot;)
+	stage(&apos;Analyse_Parse_Publish_Results&apos;) 
+                    {
+                       publish_build = build(job: &apos;Analyse_publish_results&apos;,
+                        parameters: [string(name: &apos;start_time&apos;, value: &quot;${env.Start_TIME}&quot;),
+						string(name: &apos;end_time&apos;, value: &quot;${env.End_TIME}&quot;),
+						string(name: &apos;master_build_number&apos;, value: &quot;${currentBuild.number}&quot;),
+						string(name: &apos;master_job_name&apos;, value: &quot;${env.JOB_NAME}&quot;),
+							string(name: &apos;subject&apos;, value: &quot;Performance Regression Test Results - PeopleEditor API&quot;),
+						string(name: &apos;email&apos;, value: &quot;${Email}&quot;),
+						string(name: &apos;uniq_id&apos;, value: &quot;${env.uniq_id}&quot;),
+						string(name: &apos;test_type&apos;, value: &quot;PeopleEditor&quot;)
+                            ])
+                    }
+
+
+
+
+
+
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

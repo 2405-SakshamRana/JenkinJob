@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><flow-definition>
+    <actions/>
+    <description/>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <hudson.model.StringParameterDefinition>
+                    <name>PROJECT</name>
+                    <defaultValue>gce_automation_cd</defaultValue>
+                </hudson.model.StringParameterDefinition>
+                <hudson.model.StringParameterDefinition>
+                    <name>SERVER_NAME</name>
+                    <defaultValue/>
+                </hudson.model.StringParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+    </properties>
+    <triggers/>
+    <logRotator>
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+    </logRotator>
+    <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition">
+        <script>
+            timestamps {
+                node ('linux_node  || master') { 
+                    stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }
+
+                	stage ('Execute Remote Create_Default_Local_Users Job') {
+                	    def SERVER_NAME_ACTUAL = sh(script: "ping -c 1 ${SERVER_NAME} | grep \"bytes of data.\" | grep -oE \"kacd[^ ]*\" | sed 's/.int.[a-z]*.mykronos.com//g'", returnStdout: true).trim()
+                	    echo "PROJECT=${PROJECT} SERVER_NAME=${SERVER_NAME_ACTUAL}"
+                	    def handle = triggerRemoteJob abortTriggeredJob: true, job: 'Create_Default_Local_Users', parameters: "PROJECT=${PROJECT}\nSERVER_NAME=${SERVER_NAME_ACTUAL}", remoteJenkinsName: 'Deploy', blockBuildUntilComplete: true, useCrumbCache: true, useJobInfoCache: true
+            	    }
+
+            	    stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }
+                }
+            }
+         </script>
+        <sandbox>false</sandbox>
+    </definition>
+</flow-definition>

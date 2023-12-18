@@ -1,0 +1,245 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1145.v7f2433caa07f">
+  <actions/>
+  <description>The main pipeline for API regression testing.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>separator-2b2e5293-c789-495f-ae5c-14a7a08dcc48</name>
+          <sectionHeader>WFM Deployment Details</sectionHeader>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>DEPLOY_WFM</name>
+          <description>Determines whether a new deployment will be launched prior to testing.
+This will also remove any deployments with the same id as this one.
+If a new deployment is not required this section can be left blank.</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>RELEASE</name>
+          <description>A valid release branch, i.e., r9int or 09d00d00</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>WFC_STREAM</name>
+          <description>Build level for WFC_STREAM, i.e., r9int or 09d00d00</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>WEB_STREAM</name>
+          <description>Build level for WEB_STREAM, i.e., r9int or 09d00d00</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>WFM_DEPLOYMENT_INFO</name>
+          <description>JSON which contains the following attributes.
+[
+  {
+    "INDEX": "1",
+    "CLUSTER_ID": "perf_NN",  
+    "DB_SERVER": "kacd02-prf01-ins01-wfmNN-dbs-01.int.acd.mykronos.com",
+    "DB_SID": "my_ppas_db"
+  }
+]</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>UNIQUE_TAG</name>
+          <description>Unique tag to identify the WFMs in a particular environment. 
+*  For Performnace Shift Left, unique tag will be "perf_SL". 
+*  For Performnace Core, unique tag will be "perf_Core". 
+*  For Performnace 500K, unique tag will be "perf_500K".</description>
+          <defaultValue>perf_Core</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EXTRA_INPUTS</name>
+          <description>JSON for other CAT deployment parameters not specified in this job. Format is {"input_param1": "input_value1", "input_param2": "input_value2"} Where input_value1 is the CAT input parameter name without the leasing param_ The CAT input parameter param_environment would become just "environment" in the JSON Be sure to use double quotes (") and not single quotes (') Example 1For all the performance environemnt , the value will be false.: {"cloud":"Google", "udm_url": "Location Default", "stack": "Engineering", "ums_host": "Location Default", "sdm_host": "Location Default"} Exmaple 2: {"instace_id":"11","sa_back_num":"1","sa_bgp_num":"1","sa_front_num":"1","sa_api_num":"1"}</description>
+          <defaultValue>{"sa_back_num":"1","sa_bgp_num":"1","sa_front_num":"1","sa_api_num":"1"}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>separator-0bf7dbd8-2004-4caa-9093-2bd7889eb20f</name>
+          <sectionHeader>Database Deployment Details</sectionHeader>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>DEPLOY_NEW_DB</name>
+          <description>Checking this will deploy a new database</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_server</name>
+          <description>The database server on which to redeploy staging tenants.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_name</name>
+          <description>The database name on which to redeploy staging tenants.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>db_restore_op</name>
+          <description>Full - Restores the common, healthcare, and new manufacturing tenants, dropping any existing databases before recreating them.
+Tenant Only - Restores only the specified staging tenant into an existing database, replacing any existing staging tenants by that name.
+</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>Full</string>
+              <string>Tenant Only - New Mfg</string>
+              <string>Tenant Only - Healthcare</string>
+              <string>Tenant Only - Work Mfg</string>
+              <string>Tenant Only - Project Bolt</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_restore_op</name>
+          <description>List of comma separated database restore operations.
+</description>
+          <defaultValue>COMMON, NEW_MFG, </defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>separator-eeda6c8d-b597-422c-84d4-f6cc9c08c405</name>
+          <sectionHeader>Neoload Project Checkout</sectionHeader>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Branch</name>
+          <description>Branch to use for checking out project, 'develop' by default. 
+This uses repo: https://engstash.int.kronos.com/scm/per/neoload.git</description>
+          <defaultValue>develop</defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>separator-3aab606b-3e57-4de5-a4bb-c3e47d86c3da</name>
+          <sectionHeader>Neoload Project Information</sectionHeader>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Project_Path</name>
+          <description>Relative path from the repository root ('neoload') to zip containing the .nlp file.
+For example, \regression\timekeeping\api\project</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Project_Zip</name>
+          <description>The name of zip file containing .nlp file.  For example, regression_api.zip</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>Scenario</name>
+          <description>Name of scenario(s) to be executed, in case of multiple scenarios please input comma separated values.
+For example, 
+01 - Accruals, 02 - Approvals,...</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Users</name>
+          <description>The number of virtual users to lease</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Duration</name>
+          <description>The total duration of the lease (how many hours the entire test will run for, all scenarios.)</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Submitter</name>
+          <description>firstname.lastname@ukg.com</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.8">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2660.vb_c0412dc4e6d">
+    <script>timestamps {
+    node ('master') { 
+        stage('CleanWorkspace') {
+            cleanWs()
+        }
+        stage('Deploy New Database/Tenants'){
+            echo "DEPLOY_NEW_DB="+params.DEPLOY_NEW_DB
+            if(params.DEPLOY_NEW_DB)
+                build job: 'DeployNewDB', parameters: [
+                    string(name: 'db_server', value: "${db_server}"),
+                    string(name: 'db_name', value: "${db_name}"),
+                    string(name: 'db_restore_op', value: "${db_restore_op}")
+            ]
+        }
+        stage ('Deploy Test Environment'){
+            echo "DEPLOY_WFM="+params.DEPLOY_WFM
+            if(params.DEPLOY_WFM)
+                build job: 'WFM_Deploy_Perf_ACD', parameters: [
+                    string(name: 'RELEASE', value: "${RELEASE}"),
+                    string(name: 'WFC_STREAM', value: "${WFC_STREAM}"),
+                    string(name: 'WEB_STREAM', value: "${WEB_STREAM}"),
+                    string(name: 'WFM_DEPLOYMENT_INFO', value: "${WFM_DEPLOYMENT_INFO}"),
+                    string(name: 'UNIQUE_TAG', value: "${UNIQUE_TAG}"),
+                    string(name: 'EXTRA_INPUTS', value: "${EXTRA_INPUTS}"),
+                    string(name: 'DESTROY_WFM', value: "${DEPLOY_WFM}"),
+                    //string(name: 'DESTROY_WFM', value: "false"),
+                    string(name: 'REBUILD_DB', value: "false"),
+                    string(name: 'OWNER', value: "${Submitter}")
+            ]
+        }
+        stage ('Checkout Neoload Project') 
+        {
+            build job: 'Neoload_Checkout_Regression', parameters: [
+                string(name: 'Branch', value: "${Branch}")
+            ]
+        }
+        stage ('Execute Neoload Project') 
+        {
+            build job: 'Neoload_Execution_Regression', parameters: [
+                string(name: 'Project_Path', value: "${Project_Path}"),
+                string(name: 'Project_Zip', value: "${Project_Zip}"),
+                string(name: 'Scenario', value: "${Scenario}"),
+                string(name: 'Users', value: "${Users}"),
+                string(name: 'Duration', value: "${Duration}"),
+                string(name: 'Submitter', value: "${Submitter}")
+            ]
+        }
+        stage('Process results zip'){
+            def scenarios = "${params.Scenario}".split(',');
+            copyArtifacts fingerprintArtifacts: true, projectName: 'Neoload_Execution_Regression', selector: lastSuccessful()
+            //unzip into reports directory
+            dir("${WORKSPACE}") {
+                unzip dir: ".", glob: '**/*', zipFile: "results.zip"
+                //create index for all results
+                
+            }
+            scenarios.each{
+                def scenario = "${it}".trim();
+                def scenario_dir = scenario.replaceAll("\\s","");
+                publishHTML([
+                    allowMissing: false, 
+                    alwaysLinkToLastBuild: true, 
+                    keepAll: true, 
+                    reportDir: "${WORKSPACE}/${scenario_dir}/", 
+                    reportFiles: "${scenario_dir}_report.html", 
+                    reportName: "${scenario}", 
+                    reportTitles: "Regression Results for ${scenario}"
+                ])
+            }
+        }
+     }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

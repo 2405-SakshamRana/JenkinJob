@@ -1,0 +1,116 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>30</daysToKeep>
+        <numToKeep>30</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>ZipFileName</name>
+          <description>The name of the zip file contain your jmx file, batch file and seed data without .zip</description>
+          <defaultValue>PublicRegressionAPIs</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>BatchFileName</name>
+          <description>Name of the batch file for JMeter Execution without the .bat</description>
+          <defaultValue>RunPublicRegressionTestAPIs</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>
+timestamps {
+    node('pipeline-neoload_controller'){
+            def JMeter_Dir = "NeoLoadCode\\jmeter\\regression"
+            def JMeter_Exe  = "C:\\Users\\superuser\\Documents\\JMeter_Projects\\apache-jmeter-5.5\\bin"
+            echo "JMeter Directory: ${JMeter_Dir}"
+        stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }
+
+        stage ("Copy required files from Neoload Repo"){
+            script{
+                copyArtifacts filter: "${JMeter_Dir}\\${ZipFileName}.zip", projectName: 'Get_Neoload_Repo', selector: lastSuccessful()
+            }
+        }
+
+        
+        stage ('Unzip project to workspace'){
+            dir("${workspace}\\${JMeter_Dir}") {
+                unzip dir: "${JMeter_Exe}", glob: '', zipFile: "${ZipFileName}.zip"
+            }       
+        } 
+        stage ('Run Batch Script') {
+            sh """
+                        echo "currentDate=`date +"%H:%M:%S" -u`" &gt; env.props
+                         """ 
+                        prop = readProperties file:'env.props'
+                        prop.each{key, value -&gt;
+                            env[key] = value
+                        }
+ 			long start=currentBuild.startTimeInMillis/1000
+                        sh """
+                         echo "start_TimeStamp= ${start}" &gt; env.props
+                        """
+                	prop = readProperties file:'env.props'
+                        prop.each{key, value -&gt;
+                            env[key] = value
+                        }
+            bat "${JMeter_Exe}/${ZipFileName}/${BatchFileName}.bat"
+           // bat "${JMeter_Exe}/${ZipFileName}/${ZipFileName}/${BatchFileName}.bat"
+            
+             println(currentBuild.startTimeInMillis/1000)
+                        println(currentBuild.duration/1000)
+                	 start=currentBuild.startTimeInMillis/1000
+                	int dur=currentBuild.duration/1000
+                	endTime=start+dur
+                	sh """
+                      echo "endTime = ${endTime}" &gt; env.props
+                      """
+                        prop = readProperties file:'env.props'
+                        prop.each{key, value -&gt;
+                            env[key] = value
+                        }
+                       println "endTime from env file :${env.endTime}"
+                	}
+        stage ('Archieve'){
+            archiveArtifacts artifacts: "${JMeter_Dir}/*", followSymlinks: false 
+        }
+    }
+}
+
+    
+	</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

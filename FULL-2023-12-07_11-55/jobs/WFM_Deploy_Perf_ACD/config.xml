@@ -1,0 +1,183 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions/>
+  <description>This job deploys WFM. The DB should be a pre-existing one.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>30</daysToKeep>
+        <numToKeep>-1</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>RELEASE</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>REBUILD_DB</name>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>WFC_STREAM</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>WEB_STREAM</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ENVIRONMENT_NAME</name>
+          <description>PRF - Performance</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>WFM_DEPLOYMENT_INFO</name>
+          <description>Contains the deployment info of WFMs to be deployed. INDEX will be used to identify the WFMs as 1, 2 etc. Also, all the SS/node detail's keys in the properties file will be suffixed by INDEX.</description>
+          <defaultValue>
+[
+  {
+    "INDEX": "1",
+    "CLUSTER_ID": "perf_34",
+    "DB_SERVER": "kacd02-prf05-ins01-wfm07-dbs-01.int.acd.mykronos.com",
+    "DB_SID": "ppas_example"
+  }
+]
+		</defaultValue>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OWNER</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>UNIQUE_TAG</name>
+          <description>Unique tag to identify the WFMs in a particular environment. For Performnace Shift Left, unique tag will be "perf_SL". For Performnace Core, unique tag will be "perf_Core". For Performnace 500K, unique tag will be "perf_500K".</description>
+          <defaultValue>perf_SL</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>EXTRA_INPUTS</name>
+          <description>JSON for other CAT deployment parameters not specified in this job. Format is {"input_param1": "input_value1", "input_param2": "input_value2"} Where input_value1 is the CAT input parameter name without the leasing param_ The CAT input parameter param_environment would become just "environment" in the JSON Be sure to use double quotes (") and not single quotes (') Example 1For all the performance environemnt , the value will be false.: {"cloud":"Google", "udm_url": "Location Default", "stack": "Engineering", "ums_host": "Location Default", "sdm_host": "Location Default"} Exmaple 2: {"instace_id":"11","sa_back_num":"1","sa_bgp_num":"1","sa_front_num":"1","sa_api_num":"1"}</description>
+          <defaultValue>{"sa_back_num":"1","sa_bgp_num":"1","sa_front_num":"1","sa_api_num":"1"}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>DESTROY_WFM</name>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>api_gateway_cname</name>
+          <description>The API gateway CName</description>
+          <defaultValue>kacd02-prf01-api-gtw11-app.int.acd.mykronos.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>
+            timestamps {
+                node ('master || linux_node') { 
+                    environment {
+                        //Below pass if for svcci
+                    CREDS = credentials('0e5bab99-7bd8-4c70-a6f4-c9cd62fadea8')
+                
+                 //CREDS = credentials('8563adab-fbc7-40ab-a95f-1462253842e0')
+                    }
+
+                    stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }
+
+                	stage('Trigger remote job - Build HA WFM'){
+                        def handle = triggerRemoteJob job: 'deploy_multiple_ha_wfm', 
+                        parameters: '''RELEASE=${RELEASE}
+                                    REBUILD_DB=${REBUILD_DB}
+                                    WFC_STREAM=${WFC_STREAM}
+                                    WEB_STREAM=${WEB_STREAM}
+                                    ENVIRONMENT_NAME=${ENVIRONMENT_NAME}
+                                    DESTROY_WFM=${DESTROY_WFM}
+                                    WFM_CLIENT=WFD-LinuxTC-044
+                                    WFM_DEPLOYMENT_INFO=${WFM_DEPLOYMENT_INFO}
+                                    OWNER=svcCI@kronos.com
+                                    UNIQUE_TAG=${UNIQUE_TAG}
+                                    EXTRA_INPUTS=${EXTRA_INPUTS}
+                                    DB_DUMP=.dump
+                                    SETUP_JACOCO=false
+                                    SKPI_DB_DUMP=.dump"''', 
+                        remoteJenkinsName: 'Kate01', 
+                        abortTriggeredJob: true,
+                        enhancedLogging: true, 
+                        useCrumbCache: true, 
+                        useJobInfoCache: true,
+                        pollInterval:600,
+                        httpGetReadTimeout : 600,
+                        httpPostReadTimeout : 600,
+                        blockBuildUntilComplete: true
+                        
+                        echo 'Remote build status: ' + handle.getBuildStatus().toString()
+                        build_url = handle.getBuildUrl().toString()
+                	}
+
+                	stage('Retrieve job artifact'){
+                	    script{
+                           // def credential_id  = "0e5bab99-7bd8-4c70-a6f4-c9cd62fadea8"
+                           def credential_id  = "0e5bab99-7bd8-4c70-a6f4-c9cd62fadea8"
+                            withCredentials([
+                                usernameColonPassword(credentialsId: credential_id, variable: 'CREDS')
+                            ]) {
+                	            sh '''
+                	            curl -L -u ${CREDS} -o wfmDetails.properties ''' +build_url+ '''/artifact/wfm_1/wfmDetails.properties
+                	            '''
+                	        }
+                	    }
+                	        
+                	}
+
+                	stage('Inject environment variables'){
+                	    prop = readProperties file:'wfmDetails.properties'
+                	    prop.each{key, value -&gt;
+                	        env[key] = value
+                	    }
+                	    echo "${env.EXECUTION_NAME_1}"			
+                	}
+
+                	stage ('Archieve'){
+                		archiveArtifacts allowEmptyArchive: false, artifacts: 'wfmDetails.properties', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+                	}
+
+                    stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }
+                }
+            }
+         </script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

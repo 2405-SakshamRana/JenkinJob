@@ -1,0 +1,90 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>id</name>
+          <defaultValue>123456</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_type</name>
+          <defaultValue>birt_schedule</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>dbname</name>
+          <defaultValue>ppas_birtr5</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>dbserver</name>
+          <defaultValue>kacd02-prf01-ins01-wfm57-dbs-01.int.acd.mykronos.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>start_time</name>
+          <defaultValue>2023-05-29 14:00</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>schdule_time</name>
+          <defaultValue>2023-06-04 14:00</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>end_time</name>
+          <defaultValue>2023-06-05 14:00</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>tenants_list</name>
+          <defaultValue>meijercompanies03_int_01,birtvap12599_int_01,birtvap13299_int_01,lbranddec12tnr799_int_01,lbranddec12tnr899_int_01</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>node('master') {
+    stage('Checkout') {
+        echo "Branch Name: Vinay"
+        checkout([$class: 'GitSCM', branches: [[name: 'Vinay']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory' ,relativeTargetDir: 'NeoLoadCode'],[$class: 'CloneOption', depth: 1, noTags: false, honorRefspec: true,  shallow: true ,timeout: 180]], submoduleCfg: [], userRemoteConfigs: [[refspec: '+refs/heads/Vinay:refs/remotes/origin/Vinay', credentialsId: 'remote_git_creds', url: 'https://engstash.int.kronos.com/scm/per/perf-automation.git']]])
+    }
+    
+    stage('Build and Execute JAR') {
+                                sh """ 
+                         #!/bin/bash 
+                         pwd
+        cd NeoLoadCode/Performance/ss_regression/code/
+        pwd
+        ls
+        chmod 777 insert_start_job_data.jar
+          java -jar insert_start_job_data.jar "$id" "$test_type" "$dbname" "$dbserver" "$start_time" "$schdule_time" "$end_time" "$tenants_list"
+   """
+    }
+
+}
+</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

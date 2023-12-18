@@ -1,0 +1,157 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>15</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>start_time</name>
+          <description>Enter start_time</description>
+          <defaultValue>1664199157</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>end_time</name>
+          <description>Enter end_time</description>
+          <defaultValue>1664287162</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>wfm_bck_node</name>
+          <description>Enter WFM BCK Node</description>
+          <defaultValue>kacd02-prf05-ins50-wfm50-bck-664270035-1.int.acd.mykronos.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_cluster</name>
+          <description>Enter DB Cluster</description>
+          <defaultValue>07</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>unique</name>
+          <defaultValue>1670425189112</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>filename</name>
+          <defaultValue>Response_Time</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>
+timestamps{
+node('master'){
+def jar_path = "PIntCode/kronos"
+int start= 1230
+int end=4800
+long start_new
+long end_new
+                 	echo "${jar_path}"
+
+                 stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }  
+
+   
+        stage('unique') {
+            
+                        if ("${params.unique}" != 'null')
+                            {
+                                echo "Unique ID copied ${params.unique}"
+                                env.unique = "${params.unique}"
+                            }
+                        else 
+                            {
+                                env. unique = System.currentTimeMillis()
+                                
+                                echo "Unique ID new ${env.unique}"
+                            }
+                }
+                    
+        
+
+                   stage ('Copy SQL Files from PIntCode project'){
+                         
+                            echo "Copy required jar files."
+                            copyArtifacts filter: "${jar_path}/Regression_50k.py", projectName: 'GetPIntCode',selector: lastSuccessful()
+                           copyArtifacts filter: "${jar_path}/config.py", projectName: 'GetPIntCode',selector: lastSuccessful()
+                        
+                    }
+
+                    stage ('Splunk - Build') {
+                        sleep 500;
+                    	// Shell build step
+                    	long time=params.start_time.toInteger()
+                    	start_new=time+start
+                    	  echo "Start time= ${start_new}"
+                    	 
+                    	  end_new=start_new+end
+                    	  echo "End Time= ${end_new}"
+                    	 sh"""
+                    	  cd ${jar_path}
+                    	  python3 Regression_50k.py "${params.start_time}" "${params.end_time}" "${params.db_cluster}" "${params.wfm_bck_node}" "${filename}"
+                          """
+                    	
+                    }
+                    stage ('Archive') {
+                         
+                    	archiveArtifacts allowEmptyArchive: false, artifacts: "${jar_path}/*.xlsx", caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+                         
+                         }
+                        /*  stage ('Copy Artifact to Unique folder') {
+                        
+                             sh"""
+                             #!/bin/bash
+                             
+                              mkdir /usr/local/data/${env.unique}/Splunk_Result
+                        	 cp /var/lib/jenkins/jobs/Splunk/builds/${BUILD_NUMBER}/archive/"${jar_path}"/*.xlsx /usr/local/data/${env.unique}/Splunk_Result
+                            """
+                         
+                         }  */
+                        stage('CleanWorkspace') {
+                        
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    } 
+					}
+          } 
+
+    
+	</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

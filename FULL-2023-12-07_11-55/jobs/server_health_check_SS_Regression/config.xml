@@ -1,0 +1,126 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>nmon_interval</name>
+          <description>The time interval between nmon iterations, this is equivalent to -s flag.</description>
+          <defaultValue>2</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>nmon_iteration</name>
+          <description>the number of iterations done by nmon, this is equivalent to -c flag.</description>
+          <defaultValue>50</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>servers_fqdn</name>
+          <description>comma separated list of server fqdns.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>email_recipients</name>
+          <description>A list of email recipients that will receive information from this job</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>
+            timestamps {
+                node ('master') {
+                 	def jar_path = "PIntCode/kronos"
+                 	def jar_path_ss_reg = "Performance/ss_regression/code"
+
+                 	echo "${jar_path}"
+
+                 	stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }          
+
+		  stage ('Checkout') 
+                    { 
+                       echo "Branch Name: Vinay"   
+                       checkout([$class: 'GitSCM', branches: [[name: 'Vinay']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory' ,relativeTargetDir: 'ss_regression_code'],[$class: 'CloneOption', depth: 1, noTags: false, honorRefspec: true,  shallow: true ,timeout: 180]], submoduleCfg: [], userRemoteConfigs: [[refspec: '+refs/heads/Vinay:refs/remotes/origin/Vinay', credentialsId: 'remote_git_creds', url: 'https://engstash.int.kronos.com/scm/per/perf-automation.git']]])
+                		}
+
+                    stage('unique') {
+                        if ("${params.unique}" != 'null')
+                            {
+                                echo "Unique ID copied ${params.unique}"
+                                env.unique = "${params.unique}"
+                            }
+                        else 
+                            {
+                                env.unique = System.currentTimeMillis()
+                                echo "Unique ID new ${env.unique}"
+                            }
+                    }
+
+                
+
+                   stage ('HealthCheck_old - Build') {
+                    	// Shell build step
+                         sh """ 
+                         #!/bin/bash 
+                         echo $nmon_interval
+                         echo $nmon_iteration
+                         echo $servers_fqdn
+                         echo $env.unique
+                         echo $email_recipients
+                         pwd
+                         cd ss_regression_code/Performance/ss_regression/code
+                         pwd
+                         chmod 777 health_check.jar
+                         java -jar health_check.jar "/usr/local/data/" "${env.unique}" "./src/test/resources/" "$nmon_interval" "$nmon_iteration" "$servers_fqdn" "$email_recipients" 
+                          """ 
+                     	}
+                     	
+                    stage ('Publish HTML Report') {
+                         publishHTML([allowMissing: false,  alwaysLinkToLastBuild: false, keepAll: true, reportDir: "/usr/local/data/${env.unique}/", reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: ''])
+                    }
+                    
+                    stage('copy folder to workspace') {
+                        fileOperations([folderCopyOperation(destinationFolderPath: "${WORKSPACE}/server_health_check_stats", sourceFolderPath: "/usr/local/data/${env.unique}")])
+                    }
+                    
+                    stage ('Archive') {
+                    	archiveArtifacts allowEmptyArchive: false, artifacts: 'server_health_check_stats/**', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+                    }
+
+                    stage('CleanWorkspace') {
+                         cleanWs()
+                         dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                         dir("${env.WORKSPACE}@script") { deleteDir() }
+                         dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                     }
+                }
+            }
+         </script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

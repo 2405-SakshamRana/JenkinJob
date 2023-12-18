@@ -1,0 +1,560 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1145.v7f2433caa07f">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.9.3"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.9.3">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>N</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+    <org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction plugin="workflow-multibranch@711.vdfef37cda_816">
+      <jobPropertyDescriptors>
+        <string>hudson.model.ParametersDefinitionProperty</string>
+        <string>jenkins.model.BuildDiscarderProperty</string>
+      </jobPropertyDescriptors>
+    </org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction>
+  </actions>
+  <description>This job requires existing ACD HA WFM. Only ACD is supported.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>50</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>deploy_wfm_1</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Provide below details to deploy new WFM</sectionHeader>
+          <sectionHeaderStyle>
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>release</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>cluster_id</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_server</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_name</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>destroy_wfm</name>
+          <description>Check this if you want to destroy the existing wfm.</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>wfc_stream</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>web_stream</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>environment_name</name>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>PRF - Performance</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>unique_tag</name>
+          <description>Unique tag to identify the WFMs in a particular environment. For Performnace Shift Left, unique tag will be "perf_SL". For Performnace Core, unique tag will be "perf_Core". For Performnace 500K, unique tag will be "perf_500K".</description>
+          <defaultValue>perf_SL</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>extra_inputs</name>
+          <description>JSON for other CAT deployment parameters not specified in this job. Format is {"input_param1": "input_value1", "input_param2": "input_value2"} Where input_value1 is the CAT input parameter name without the leasing param_ The CAT input parameter param_environment would become just "environment" in the JSON Be sure to use double quotes (") and not single quotes (') Example 1For all the performance environemnt , the value will be false.: {"cloud":"Google", "udm_url": "Location Default", "stack": "Engineering", "ums_host": "Location Default", "sdm_host": "Location Default"} Exmaple 2: {"instace_id":"11","sa_back_num":"1","sa_bgp_num":"1","sa_front_num":"1","sa_api_num":"1"}</description>
+          <defaultValue>{"sa_back_num":"1","sa_bgp_num":"1","sa_front_num":"1","sa_api_num":"1"}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>neload_test_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>ACD HA WFM details.</sectionHeader>
+          <sectionHeaderStyle>
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>branch</name>
+          <description>Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where all the scripts are located. All the code and all the Neoload scripts should be in the same branch</description>
+          <defaultValue>develop</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>submitter</name>
+          <description>As firstname.lastname@kronos.com</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>nmon_iteration</name>
+          <description>Can not be empty</description>
+          <defaultValue>5</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>nmon_interval</name>
+          <description>Can not be empty</description>
+          <defaultValue>890</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>warm_up_script_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of Warm Up Neoload script, leave these empty to skip.</sectionHeader>
+          <sectionHeaderStyle>
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_project_path</name>
+          <description>Path of a zip file containing .nlp file, relative to the workspace. Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where warmup scripts are located.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_scenario</name>
+          <description>Name of warmup scenario in the project, in case of multiple scenarios please input comma separated values.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_users_count</name>
+          <description>User count for license</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_duration</name>
+          <description>If using a shared license, the duration of the lease</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>database_script_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of Database script, leave these empty to skip.</sectionHeader>
+          <sectionHeaderStyle>
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>pre_db_script_path</name>
+          <description>Path relative "performance/bin" directory</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>post_db_script_path</name>
+          <description>Path relative "performance/bin" directory</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>test_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of Main 50K Test. Leave these empty to skip</sectionHeader>
+          <sectionHeaderStyle>
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_project_path</name>
+          <description>Provide the path of the zip file which contains the .nlp file, relative to the Git Repository</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_scenario</name>
+          <description>Provide the Scenario Name which needs to be executed, in case of multiple scenarios, input comma-separated values.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_users_count</name>
+          <description>Provide the number of users for which the license needs to be leased.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_duration</name>
+          <description>Provide the duration for which the license needs to be leased.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>revert_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of 50k Revert Test Script. Leave these empty to skip</sectionHeader>
+          <sectionHeaderStyle>
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_project_path</name>
+          <description>Provide the path of the zip file which contains the .nlp file, relative to the Git Repository</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_scenario</name>
+          <description>Provide the Scenario Name which needs to be executed, in case of multiple scenarios, input comma-separated values.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_users_count</name>
+          <description>Provide the number of users for which the license needs to be leased.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_duration</name>
+          <description>Provide the duration for which the license needs to be leased.</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.8">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2660.vb_c0412dc4e6d">
+    <script>@Library('perf-pipeline-library') _
+
+// Define the Unique ID
+def uniq_id = System.currentTimeMillis()
+env.uniq_id = uniq_id
+
+
+// Main Method starts here
+node { 
+    label 'master || linux_node'
+	properties([
+		buildDiscarder(logRotator(numToKeepStr: '50')),
+		parameters([
+		separator(name: "deploy_wfm_1", sectionHeader: "Provide below details to deploy new WFM",
+			separatorStyle: "border-width: 0",
+			sectionHeaderStyle: """
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			"""
+		),
+		string(name: 'release', defaultValue: '', description: ''),
+		string(name: 'cluster_id', defaultValue: '', description: ''),
+		string(name: 'db_server', defaultValue: '', description: ''),
+		string(name: 'db_name', defaultValue: '', description: ''),
+		booleanParam(name: 'destroy_wfm', defaultValue: false, description: 'Check this if you want to destroy the existing wfm.'),
+		string(name: 'wfc_stream', defaultValue: '', description: ''),
+		string(name: 'web_stream', defaultValue: '', description: ''),
+		choice(name: 'environment_name', choices: ['PRF - Performance']),
+		string(name: 'unique_tag', defaultValue: 'perf_SL', description: 'Unique tag to identify the WFMs in a particular environment. For Performnace Shift Left, unique tag will be "perf_SL". For Performnace Core, unique tag will be "perf_Core". For Performnace 500K, unique tag will be "perf_500K".'),
+		string(name: 'extra_inputs', defaultValue: '''{"sa_back_num":"1","sa_bgp_num":"1","sa_front_num":"1","sa_api_num":"1"}''', description: '''JSON for other CAT deployment parameters not specified in this job. Format is {"input_param1": "input_value1", "input_param2": "input_value2"} Where input_value1 is the CAT input parameter name without the leasing param_ The CAT input parameter param_environment would become just "environment" in the JSON Be sure to use double quotes (") and not single quotes (') Example 1For all the performance environemnt , the value will be false.: {"cloud":"Google", "udm_url": "Location Default", "stack": "Engineering", "ums_host": "Location Default", "sdm_host": "Location Default"} Exmaple 2: {"instace_id":"11","sa_back_num":"1","sa_bgp_num":"1","sa_front_num":"1","sa_api_num":"1"}'''),
+		
+		
+		separator(name: "neload_test_details", sectionHeader: "ACD HA WFM details.",
+			separatorStyle: "border-width: 0",
+			sectionHeaderStyle: """
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			"""
+		),
+		//string(name: 'spark_nodes', defaultValue: 'kacd02-prf05-ins01-wfm05-scc-rcc-60152-1.int.acd.mykronos.com     kacd02-prf05-ins01-wfm05-scc-rcc-60152-2.int.acd.mykronos.com kacd02-prf05-ins01-wfm05-scc-rcc-60152-3.int.acd.mykronos.com', description: 'TAB separated values'),
+		//string(name: 'batch_nodes', defaultValue: 'kacd02-prf05-ins01-wfm05-scc-bcc-64910-1.int.acd.mykronos.com     kacd02-prf05-ins01-wfm05-scc-bcc-64910-2.int.acd.mykronos.com kacd02-prf05-ins01-wfm05-scc-bcc-64910-3.int.acd.mykronos.com', description: 'TAB separated values'),
+		string(name: 'branch', defaultValue: 'develop', description: 'Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where all the scripts are located. All the code and all the Neoload scripts should be in the same branch'),
+		string(name: 'submitter', defaultValue: '', description: 'As firstname.lastname@kronos.com'),
+		string(name: 'nmon_iteration', defaultValue: '5', description: 'Can not be empty'),
+		string(name: 'nmon_interval', defaultValue: '890', description: 'Can not be empty'),
+		separator(name: "warm_up_script_details", sectionHeader: "Details of Warm Up Neoload script, leave these empty to skip.",
+			separatorStyle: "border-width: 0",
+			sectionHeaderStyle: """
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			"""
+		),
+		string(name: 'warmup_project_path', defaultValue: '', description: 'Path of a zip file containing .nlp file, relative to the workspace. Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where warmup scripts are located.'),
+		string(name: 'warmup_scenario', defaultValue: '', description: 'Name of warmup scenario in the project, in case of multiple scenarios please input comma separated values.'),
+		string(name: 'warmup_users_count', defaultValue: '', description: 'User count for license'),
+		string(name: 'warmup_duration', defaultValue: '', description: 'If using a shared license, the duration of the lease'),
+		separator(name: "database_script_details", sectionHeader: "Details of Database script, leave these empty to skip.",
+			separatorStyle: "border-width: 0",
+			sectionHeaderStyle: """
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			"""
+		),
+		string(name: 'pre_db_script_path', defaultValue: '', description: 'Path relative "performance/bin" directory'),
+		string(name: 'post_db_script_path', defaultValue: '', description: 'Path relative "performance/bin" directory'),
+		separator(name: "test_details", sectionHeader: "Details of Main 50K Test. Leave these empty to skip",
+			separatorStyle: "border-width: 0",
+			sectionHeaderStyle: """
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			"""
+		),
+		string(name: 'test_project_path', defaultValue: '', description: 'Provide the path of the zip file which contains the .nlp file, relative to the Git Repository'),
+		string(name: 'test_scenario', defaultValue: '', description: 'Provide the Scenario Name which needs to be executed, in case of multiple scenarios, input comma-separated values.'),
+		string(name: 'test_users_count', defaultValue: '', description: 'Provide the number of users for which the license needs to be leased.'),
+		string(name: 'test_duration', defaultValue: '', description: 'Provide the duration for which the license needs to be leased.'),
+		separator(name: "revert_details", sectionHeader: "Details of 50k Revert Test Script. Leave these empty to skip",
+			separatorStyle: "border-width: 0",
+			sectionHeaderStyle: """
+				background-color: #dbdb8e;
+				text-align: center;
+				padding: 4px;
+				color: #343434;
+				font-size: 22px;
+				font-weight: normal;
+				text-transform: uppercase;
+				font-family: 'Orienta', sans-serif;
+				letter-spacing: 1px;
+			"""
+		),
+		string(name: 'revert_project_path', defaultValue: '', description: 'Provide the path of the zip file which contains the .nlp file, relative to the Git Repository'),
+		string(name: 'revert_scenario', defaultValue: '', description: 'Provide the Scenario Name which needs to be executed, in case of multiple scenarios, input comma-separated values.'),
+		string(name: 'revert_users_count', defaultValue: '', description: 'Provide the number of users for which the license needs to be leased.'),
+		string(name: 'revert_duration', defaultValue: '', description: 'Provide the duration for which the license needs to be leased.'),
+	])])  
+	
+def allservers
+def fnt = []
+def bck = []
+def api = []
+def bgp = []
+def nsq = []
+def dmc = []
+def dmq = []
+def ins_dmq = []
+def db = []
+def db_server
+def db_name
+//def spark = []
+//def batch = []
+def execution_name
+	timestamps {
+    // some block
+
+
+}
+//MAIN execution
+	
+//	if(params.simulation.isEmpty() || params.submitter.isEmpty())
+//		throw new Exception("simulation and submitter can not be left empty.")
+
+// Clean the Workspace
+	workspaceClean()
+
+// Download the PInt Code
+    codeCheckOut()
+
+// Deploy WFM
+    execution_name = deployWFM()
+	//execution_name = "WFM_HA_PIPELINE [wfm_50] [ins_50] [perf_SL]"
+	
+// Fetch the WFM Details
+	findDeploymentDetails(execution_name)
+	fnt += env.fnt
+	bck += env.bck
+	api += env.api
+	bgp += env.bgp
+	db_server = env.db_server
+	db_name = env.db_name
+	//echo "front:"+fnt+"\nback:"+bck+"\napi:"+api+"\nbgp:"+bgp+"\ndb_server:"+db_server+"\ndb_name:"+db_name
+
+// Create engperfuser based on the above details
+	createWFMUsers()
+
+// Find all the servers and add to the list 
+	allservers = findAllServers()
+
+	//WFM nodes are duplicated in the list
+	allservers = allservers.toList().toSet().toList()
+	println "after removing duplicates: " + allservers
+	allservers.each {
+		//if (it.contains('-fnt-')) fnt += it
+		//else if (it.contains('-bck-')) bck += it
+		//else if(it.contains('-bgp-')) bgp += it
+		//else if (it.contains('-api-')) api += it
+		if (it.contains('-dbs-')) db += it
+		else if (it.contains('-dmc-')) dmc += it
+		else if (it.contains('-nsq-')) nsq += it
+		else if (it.matches(".*?-ins[\\d]+-dmq.*?")) ins_dmq += it
+		else if (!it.matches(".*?-ins[\\d]+-dmq.*?") &amp;&amp; it.contains("dmq")) dmq += it
+	} 
+	
+	println "fnt: ${fnt.toString()}\n bck: ${bck.toString()}\n bgp: ${bgp.toString()}\n api: ${api.toString()}\n db:${db.toString()}\n"
+	println "dmc: ${dmc.toString()}\n nsq: ${nsq.toString()}\n dmq: ${dmq.toString()}\n ins_dmq: ${ins_dmq.toString()}\n"
+	if(!fnt || !bck || !bgp || !api || !db || !dmc || !nsq || !ins_dmq || !dmq || !db_server || !db_name)
+			throw new Exception("None of the values can be empty!!")
+	env.dmc = dmc.join(',')
+	env.nsq = nsq.join(',')
+	env.ins_dmq = ins_dmq.join(',')
+	env.dmq = dmq.join(',')
+
+// Finally add engperfuser to all the deployments
+	createDefaultUsers(allservers)
+
+// Configure the wfm backend configurations
+	wfmBackendConfig()
+
+// Clear the Redis cache and start the WFM
+	redisCacheClear()
+
+// Perform HealthCheck and install the NMON
+	server_health_check_build_number = healthCheck()
+	env.server_health_check_build_number = server_health_check_build_number
+	
+// Start the Warmup Job.
+	if(params.branch &amp;&amp; params.warmup_project_path &amp;&amp; params.warmup_scenario &amp;&amp; params.warmup_users_count &amp;&amp; params.warmup_duration &amp;&amp; params.submitter) {
+		neoloadWarmupTest()
+	}
+
+// Run the pre database script
+	//if(params.pre_db_script_path) {
+		//preDBScript()
+	//}
+
+// Run the Main tests
+	if(params.branch &amp;&amp; params.test_project_path &amp;&amp; params.test_scenario &amp;&amp; params.test_users_count &amp;&amp; params.test_duration &amp;&amp; params.submitter) {
+		neoloadMainTest()
+	}
+  
+//Run the post database script 
+	//if(params.post_db_script_path) {
+		//postDBScript()
+	//}
+
+// Publish the Artifacts
+	publishArtifacts()
+
+// Collect the NMON Data and parse the nmon data
+    nmonCollectionParse()
+
+// Collect steady state NMON Data
+	build_result15_number = nmonCpuSteadyState()
+	env.build_result15_number = build_result15_number
+	
+// Download the logs 
+	logsDownload()
+
+//Compare with baseline
+    build_result19_number = compareCpuBaseline()
+	env.build_result19_number = build_result19_number
+	
+// Run the Revert Tests Script
+	if(params.branch &amp;&amp; params.revert_project_path &amp;&amp; params.revert_scenario &amp;&amp; params.revert_users_count &amp;&amp; params.revert_duration &amp;&amp; params.submitter) {
+		neoloadRevertTest()
+	}
+
+// Publish the 50K Report
+	publishReport()
+	
+// Clean the Workspace
+	workspaceClean()
+
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

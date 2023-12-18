@@ -1,0 +1,159 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1145.v7f2433caa07f">
+  <actions/>
+  <description>This job perform following actions in sequence:&#13;
+Stop the WFM deployment&#13;
+Clear the WFM Logs&#13;
+Clear the Redis Cache&#13;
+Start the WFM Deployment</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+      <autoRebuild>true</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>backend_nodes</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>bgp_nodes</name>
+          <description>Please provide the BGP node, API node, UDM node with comma-separated values. </description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.8">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2660.vb_c0412dc4e6d">
+    <script>/* The complete workflow is as follows:
+    -- Stop the WFM, Clean the Tomcat and WFC Logs, Count the Redis Cache, Archieve the result, Delete the Redis Cache and then archieve the results
+    -- Count the redis cache again and start the wfm and archieve the final results. */
+    
+timestamps {
+    node{ 
+        stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }
+        stage ("Copy required files from PIntCode project"){
+            script{
+                copyArtifacts filter: '**/*.*', projectName: 'GetPIntCode',selector: lastSuccessful()
+            }
+        }
+        withCredentials([usernamePassword(credentialsId: 'engperfuser', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+            stage("Stop WFM Deployment"){
+                sh '''
+                    #!/bin/bash
+                    source "${WORKSPACE}"/PIntCode/bin/util.wfm_pint.bash
+                    export CACHEDIR=${WORKSPACE}
+                    export backend=${backend_nodes}
+                    export bgp_backend=${bgp_nodes}
+                    echo "@Main(); $(date +"%T");  Version ${version}; Stopping WFM"
+                    wfm_stop
+                 '''
+            }
+            stage("Clean WFM Logs"){
+                sh '''
+                    #!/bin/bash
+                    source "${WORKSPACE}"/PIntCode/bin/util.wfm_pint.bash
+                    export CACHEDIR=${WORKSPACE}
+                    export backend=${backend_nodes}
+                    export bgp_backend=${bgp_nodes}
+                    echo "@Main(); $(date +"%T");  Version ${version}; Clean the WFM"
+                    wfm_clean
+                 '''
+            }
+            stage("Redis Cache Pre Count"){
+                sh '''
+                    #!/bin/bash
+                    source "${WORKSPACE}"/PIntCode/bin/util.wfm_pint.bash
+                    export CACHEDIR=${WORKSPACE}
+                    export backend=${backend_nodes}
+                    export bgp_backend=${bgp_nodes}
+                    export HOME="${WORKSPACE}"/PIntCode
+                    export wfm_cloudappname=$(echo ${backend} | cut -d "," -f1 | grep -Eo "(ins[0-9]+-)*wfm[0-9]+")
+                    echo "@Main(); $(date +"%T");  Version ${version}; Count Redis Cache"
+                    wfm_count_redis_cache
+                 '''
+            }
+            stage ('Archieve'){
+    		archiveArtifacts allowEmptyArchive: false, artifacts: 'redis-monitoring-service/*.*', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+    	    }
+            stage("Delete the Redis Cache"){
+                sh '''
+                    #!/bin/bash
+                    source "${WORKSPACE}"/PIntCode/bin/util.wfm_pint.bash
+                    export CACHEDIR=${WORKSPACE}
+                    export backend=${backend_nodes}
+                    export bgp_backend=${bgp_nodes}
+                    export HOME="${WORKSPACE}"/PIntCode
+                    export wfm_cloudappname=$(echo ${backend} | cut -d "," -f1 | grep -Eo "(ins[0-9]+-)*wfm[0-9]+")
+                    echo "@Main(); $(date +"%T");  Version ${version}; Deleting Redis Cache"
+                    wfm_delete_redis_cache
+                  '''
+            }
+            stage ('Archieve'){
+    		archiveArtifacts allowEmptyArchive: false, artifacts: 'redis-monitoring-service/*.*', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+    	    }
+            stage("Redis Cache Post Count"){
+                sh '''
+                    #!/bin/bash
+                    source "${WORKSPACE}"/PIntCode/bin/util.wfm_pint.bash
+                    export CACHEDIR=${WORKSPACE}
+                    export backend=${backend_nodes}
+                    export bgp_backend=${bgp_nodes}
+                    export HOME="${WORKSPACE}"/PIntCode
+                    export wfm_cloudappname=$(echo ${backend} | cut -d "," -f1 | grep -Eo "(ins[0-9]+-)*wfm[0-9]+")
+                    echo "@Main(); $(date +"%T");  Version ${version}; Count Redis Cache"
+                    wfm_count_redis_cache
+                 '''
+            }
+            stage("Start the Deployment"){
+                sh '''
+                    #!/bin/bash
+                    source "${WORKSPACE}"/PIntCode/bin/util.wfm_pint.bash
+                    export CACHEDIR=${WORKSPACE}
+                    export backend=${backend_nodes}
+                    export bgp_backend=${bgp_nodes}
+                    echo "@Main(); $(date +"%T");  Version ${version}; Starting WFM"
+                    wfm_start
+                 '''
+            }
+        }
+        stage ('Archieve'){
+    		archiveArtifacts allowEmptyArchive: false, artifacts: 'redis-monitoring-service/*.*', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+    	}
+        stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

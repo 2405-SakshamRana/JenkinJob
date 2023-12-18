@@ -1,0 +1,33 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<slave>
+  <name>pipeline-neoload_controller_new</name>
+  <description>kacd02-prf05-ins01-ui97-test-301133646722.int.acd.mykronos.com</description>
+  <remoteFS>C:\jenkins</remoteFS>
+  <numExecutors>2</numExecutors>
+  <mode>EXCLUSIVE</mode>
+  <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+  <launcher class="hudson.slaves.JNLPLauncher">
+    <workDirSettings>
+      <disabled>false</disabled>
+      <internalDir>remoting</internalDir>
+      <failIfWorkDirIsMissing>false</failIfWorkDirIsMissing>
+    </workDirSettings>
+    <webSocket>false</webSocket>
+  </launcher>
+  <label>pipeline-neoload_controller_new</label>
+  <nodeProperties>
+    <org.jenkinsci.plugins.mailwatcher.WatcherNodeProperty plugin="mail-watcher-plugin@1.17">
+      <onlineAddresses>ashish.goel@ukg.com,nishant.jain@ukg.com,neha.kumari@ukg.com,abhishek.jain@ukg.com</onlineAddresses>
+      <offlineAddresses>ashish.goel@ukg.com,nishant.jain@ukg.com,neha.kumari@ukg.com,abhishek.jain@ukg.com</offlineAddresses>
+    </org.jenkinsci.plugins.mailwatcher.WatcherNodeProperty>
+    <hudson.tools.ToolLocationNodeProperty>
+      <locations>
+        <hudson.tools.ToolLocationNodeProperty_-ToolLocation>
+          <type>hudson.plugins.git.GitTool$DescriptorImpl</type>
+          <name>Default</name>
+          <home>C:\Program Files\Git\bin\git.exe</home>
+        </hudson.tools.ToolLocationNodeProperty_-ToolLocation>
+      </locations>
+    </hudson.tools.ToolLocationNodeProperty>
+  </nodeProperties>
+</slave>

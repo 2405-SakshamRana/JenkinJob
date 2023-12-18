@@ -1,0 +1,88 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1145.v7f2433caa07f">
+  <actions/>
+  <description>Fetch ACD deployment details. CAT WFM Services - HA</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>15</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>EXECUTION_NAME</name>
+          <description>Input the execution name from rightscale. Only ACD environment is supported. e.g. PRF-SL-WFM89-HC</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.8">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2660.vb_c0412dc4e6d">
+    <script>def buildno =''
+def props= [:]
+
+timestamps {
+    node ('linux_node  || master') { 
+        stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }
+    	stage('Trigger remote Job'){
+    	    def handle = triggerRemoteJob abortTriggeredJob: true, job: 'Fetch_ACD_Deployment_Details', parameters: 'EXECUTION_NAME=${EXECUTION_NAME}', remoteJenkinsName: 'Deploy', useCrumbCache: true, useJobInfoCache: true
+            buildno = handle.getBuildNumber()
+    	}
+    	stage('Retrieve job artifact'){
+    	    script{
+                def credential_id  = "svcci-deploy-gcp"
+                withCredentials([
+                    usernameColonPassword(credentialsId: credential_id, variable: 'USRPWD')
+                ]) {
+    	            sh '''
+    	            curl -L -u ${USRPWD} -o prop.txt https://jenkins-deploy.dev.mykronos.com/job/Fetch_ACD_Deployment_Details/'''+buildno+'''/artifact/prop.txt
+    	            '''
+    	        }
+    	    }
+    	        
+    	}
+    	stage('Inject environment variables'){
+    	    prop = readProperties file:'prop.txt'
+    	    prop.each{key, value -&gt;
+    	        env[key] = value
+    	    }
+    	}
+    	stage ('Archieve'){
+    		archiveArtifacts allowEmptyArchive: false, artifacts: 'prop.txt', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+    	}
+        stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }
+    }
+}</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

@@ -1,0 +1,84 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<jenkins.plugins.publish__over__ssh.BapSshPublisherPlugin_-Descriptor plugin="publish-over-ssh@1.24">
+  <hostConfigurations>
+    <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+      <name>SL_ppas_wfm07</name>
+      <hostname>kacd02-prf05-ins01-wfm07-dbs-01.int.acd.mykronos.com</hostname>
+      <username>engperfuser</username>
+      <secretPassword>{AQAAABAAAAAQ9vmlwYwVQAvRwLJfL402S8f3BimorVN3CyCrAuM1cfY=}</secretPassword>
+      <remoteRootDir>/</remoteRootDir>
+      <port>22</port>
+      <commonConfig class="jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration">
+        <secretPassphrase>{AQAAABAAAAAQChaNwCBAiz+lUenWY/YXc630RmpL3j5VhGKFDiPECF8=}</secretPassphrase>
+        <key>-----BEGIN RSA PRIVATE KEY-----
+MIIEpQIBAAKCAQEAvygtIaDYpmfU+kZVmjc90HBHML8b/q7jjp9zmHZZM24p9uM/
+yWs60cvviHTn/8dhsDm0lSCZgm3tnJv07Rv4xWwDd9PWvhqylfVL3WvbPlCyKMyy
+s1LdKsD/vyhhrDSMAqeHUSWiErqyKAII/lV307HvevKMhMX20kaW6XwagvbYqPQY
+RZiI++dHHyIemR1UtSfSgUuxPwKDPKUQc2AstQbbR5h3WK9lvysN+eKXiA2zNg5O
+VrMiwhgCQcjb5QUf9oPbsnGNw+3mCQ3hIOtbvdtROvKzSM9YylDKb+3ouNqU6331
+g2ADFJWRxOO6TtL/LM19X04u8UMGTpbi+aa48QIDAQABAoIBAGPZn6F2PFTH3ecR
+gDt66Y4MaBNdcEkbn3/raF1WTIfh3oe48qPKoEHgTfGwZ1MjGbMMoXhYO/d2Zmys
+xkZomwy8vB8Gh6Brn6dXJ1a0tSQa0MUhD6M+AIsJn02B0Ws7U3s7eSJ5DuzLmq3t
+SjdX+6yXwGkvcxkTszbpaoDxs4N+dnSbJPm/M+WAniCwZKxTS5d87lbAnpHROdYA
+pS0xoS02ChLDTBDOEoJfjX8OTm87yCIdC2m5VRXYSEonS2jcWctb2fW/SuxhCpGg
+b+WEv1brhMirB/sOA66Eozi0hQnDCt60sIWZKe1vWScayUANBkcFZvE58RXN6q39
+bjuoC0ECgYEA+2OUETzj9s+hWfrGKCvdLxYU+zJdTIHL9xeUVgO/Z9XFMMVvFkgn
+lYCdnRlufDebRu6HBtGbrcVCws3kJUyGIr6pgYKpaZl/hgVs6NUxuL6VxWg8QMHL
+G3oDT0u+URsMYXMmf6Em/nGko5iRDr6+KaE9t0O9Q0frjV0N5k/gOOkCgYEAwqnF
+v6QKWw24k6vFGlbJUc3Su2b1eRGodRpUoO/MNuKoTygbWAuOd3e80OoOlkI6tyL5
+TW/VRtLXIaBkP8gNLni2tX9/RN7GWyX7wiWRFWxMAIajgf/EOnfOsrtBFem893Wu
+xhmMbPW61h62j5LBqsMiXlvAhjMcpURsGN7DeskCgYEA9Vvqn6x7n2BlzmnJ0FmH
+pzZ5QfeVQmAJEGEuQYmk3paxwPlihC/mmq+Opk+1G342itOybIBW3xMCJxpHi/QV
+k4Hd9W7vJQdRhSB0fQfgYL17dtJWxKmhMG81HccCuSyaN97o+3bxlTScCaSWJ/sZ
+pY4fq2htKGbgy/e/4kOhyEkCgYEAvqQz1U5bEfdrF7w2iWgLO8E+K2hW6V3gw+ao
+kQCn1+y8duFJfj27JccvNM60wHVWOXrX+v2WOwlLxVPmOgy61BNGpJOb2Z/vVN7r
+I6VU5E0uVamGQk9xJu2kkagPwt0pwpQPOVVWEHPLqd1kX1GTt5/pbc2fzA4MdNKA
+pw6rFPkCgYEAzAZ9I4+GRtjEDWZcCo51phKaYu5ylw7s1YCDT3onLWPUsrUeoBxR
+cg+DllUtKXtfG0Oq5aBt27N/3HbhJofsPMFfvDEvcbJroMsifOW92hImrTD07p6C
+zBw71X77TS+m3ca13LLA2BSr1J7UMUEgo6W0Rnkc71K3sZ14qRStA2s=
+-----END RSA PRIVATE KEY-----</key>
+        <keyPath></keyPath>
+        <disableAllExec>false</disableAllExec>
+      </commonConfig>
+      <timeout>300000</timeout>
+      <overrideKey>false</overrideKey>
+      <disableExec>false</disableExec>
+      <keyInfo>
+        <secretPassphrase>{AQAAABAAAAAQD7zgnf30hRofBFv6N2IeSBj0sPSxaX0UUAnMXQfwvEU=}</secretPassphrase>
+        <key></key>
+        <keyPath></keyPath>
+      </keyInfo>
+      <jumpHost></jumpHost>
+      <proxyType></proxyType>
+      <proxyHost></proxyHost>
+      <proxyPort>0</proxyPort>
+      <proxyUser></proxyUser>
+      <secretProxyPassword>{AQAAABAAAAAQYaN51uz8OHg/bGKp1xvro6O+lXnj5TPw6L4CYxf5pcM=}</secretProxyPassword>
+    </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+    <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+      <name>wfd-tc880</name>
+      <hostname>wfd-tc880.int.kronos.com</hostname>
+      <username>KRONOS-WINDOWS-/superuser</username>
+      <secretPassword>{AQAAABAAAAAQTe2UWL9NMFkBWOPdhq+PxvV7kWLO3SwSF3iOMf+vqXQ=}</secretPassword>
+      <remoteRootDir>C:\jenkins\workspace</remoteRootDir>
+      <port>22</port>
+      <commonConfig class="jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration" reference="../../jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
+      <timeout>300000</timeout>
+      <overrideKey>true</overrideKey>
+      <disableExec>false</disableExec>
+      <keyInfo>
+        <secretPassphrase>{AQAAABAAAAAQnzaTDKyXRBTRFwlYltWYCxKQI8doyeO2DqngD9cQTbI=}</secretPassphrase>
+        <key></key>
+        <keyPath></keyPath>
+      </keyInfo>
+      <jumpHost></jumpHost>
+      <proxyType></proxyType>
+      <proxyHost></proxyHost>
+      <proxyPort>0</proxyPort>
+      <proxyUser></proxyUser>
+      <secretProxyPassword>{AQAAABAAAAAQDcT2vCuxx3NFQ20M595OiZ80gpdhg7iEKuJDrluxI+E=}</secretProxyPassword>
+    </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+  </hostConfigurations>
+  <commonConfig reference="../hostConfigurations/jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
+  <defaults class="jenkins.plugins.publish_over_ssh.options.SshPluginDefaults"/>
+</jenkins.plugins.publish__over__ssh.BapSshPublisherPlugin_-Descriptor>

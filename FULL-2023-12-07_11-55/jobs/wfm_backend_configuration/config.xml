@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><flow-definition>
+    <actions/>
+    <description/>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <hudson.model.StringParameterDefinition>
+                    <name>backend_nodes</name>
+                    <defaultValue/>
+                </hudson.model.StringParameterDefinition>
+                <hudson.model.StringParameterDefinition>
+                    <name>bgp_nodes</name>
+                    <defaultValue/>
+                    <description>Please provide the BGP node, API node, UDM node with comma-separated values. </description>
+                </hudson.model.StringParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+    </properties>
+    <triggers/>
+    <logRotator>
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+    </logRotator>
+    <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition">
+        <script>
+            timestamps {
+                node ('master || linux_node') { 
+                    stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }
+
+                    stage('Copy required files from PIntCode project'){
+                        script{
+                            copyArtifacts filter: 'PIntCode/bin/util.wfm_pint.bash', projectName: 'GetPIntCode',selector: lastSuccessful()
+                        }
+                    }
+
+                	stage('wfm_configuration') {
+                        withCredentials([
+                            usernamePassword(credentialsId: 'engperfuser', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME'),
+                        ]) {
+                            sh ''' 
+                            #!/bin/bash
+                            set -eo pipefail
+                            export USERNAME="${USERNAME}"
+                            export PASSWORD="${PASSWORD}"
+                            export CACHEDIR="${WORKSPACE}"
+                            source "${WORKSPACE}"/PIntCode/bin/util.wfm_pint.bash
+                            
+                            export backend="${backend_nodes}"
+                            export bgp_backend="${bgp_nodes}"
+            
+                            if [[ (-z "$backend_nodes") ]]; then
+                            	echo "$backend_nodes cannot be empty"
+                                exit 1
+                            fi
+                            if [[ (-z "bgp_nodes") ]]; then
+                            	echo "$bgp_nodes cannot be empty"
+                                exit 1
+                            fi
+                            
+                            export version=1.0
+                            export currenttime="$(date +"%Y_%m_%d_%H_%M")"
+                            #export currenttime="${currentBuild.startTimeInMillis}"
+            
+                            wfm_configuration 
+                            '''
+                        }
+                	}
+
+                	stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }
+                }
+            }
+         </script>
+        <sandbox>false</sandbox>
+    </definition>
+</flow-definition>

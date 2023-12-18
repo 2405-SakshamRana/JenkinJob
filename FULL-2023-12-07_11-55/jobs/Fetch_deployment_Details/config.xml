@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><flow-definition>
+    <actions/>
+    <description>Fetch ACD deployment details. CAT WFM Services - HA</description>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <hudson.model.StringParameterDefinition>
+                    <name>EXECUTION_NAME</name>
+                    <defaultValue/>
+                    <description>Input the execution name from rightscale. Only ACD environment is supported. e.g. PRF-SL-WFM89-HC</description>
+                </hudson.model.StringParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+    </properties>
+    <triggers/>
+    <logRotator>
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>15</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+    </logRotator>
+    <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition">
+        <script>
+            def buildno =''
+            def props= [:]
+            
+            timestamps {
+                node ('linux_node  || master') { 
+                    stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }
+
+                	stage('Trigger remote Job'){
+                	    def handle = triggerRemoteJob abortTriggeredJob: true, job: 'Fetch_ACD_Deployment_Details', parameters: 'EXECUTION_NAME=${EXECUTION_NAME}', remoteJenkinsName: 'Deploy', useCrumbCache: true, useJobInfoCache: true
+                        buildno = handle.getBuildNumber()
+                	}
+
+                	stage('Retrieve job artifact'){
+                	    script{
+                            def credential_id  = "svcci-deploy-gcp"
+                            withCredentials([
+                                usernameColonPassword(credentialsId: credential_id, variable: 'USRPWD')
+                            ]) {
+                	            sh '''
+                	            curl -L -u ${USRPWD} -o prop.txt https://jenkins-deploy.dev.mykronos.com/job/Fetch_ACD_Deployment_Details/'''+buildno+'''/artifact/prop.txt
+                	            '''
+                	        }
+                	    }
+                	        
+                	}
+                	stage('Inject environment variables'){
+                	    prop = readProperties file:'prop.txt'
+                	    prop.each{key, value -&gt;
+                	        env[key] = value
+                	    }
+                	}
+
+                	stage ('Archieve'){
+                		archiveArtifacts allowEmptyArchive: false, artifacts: 'prop.txt', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+                	}
+
+                    stage('CleanWorkspace') {
+                        cleanWs()
+                        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+                        dir("${env.WORKSPACE}@script") { deleteDir() }
+                        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+                    }
+                }
+            }
+         </script>
+        <sandbox>false</sandbox>
+    </definition>
+</flow-definition>

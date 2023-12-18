@@ -1,0 +1,548 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions>
+    <org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction plugin="workflow-multibranch@716.vc692a_e52371b_">
+      <jobPropertyDescriptors>
+        <string>hudson.model.ParametersDefinitionProperty</string>
+        <string>jenkins.model.BuildDiscarderProperty</string>
+      </jobPropertyDescriptors>
+    </org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction>
+  </actions>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>50</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>deploy_wfm_1</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Provide below details to deploy regression WFM</sectionHeader>
+          <sectionHeaderStyle>
+                                                background-color: #dbdb8e;
+                                                text-align: center;
+                                                padding: 4px;
+                                                color: #343434;
+                                                font-size: 22px;
+                                                font-weight: normal;
+                                                text-transform: uppercase;
+                                                font-family: 'Orienta', sans-serif;
+                                                letter-spacing: 1px;
+                                                </sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>deploy_wfm</name>
+          <description>Please provide if you want to Deploy</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>release</name>
+          <defaultValue>r9int</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>cluster_id</name>
+          <defaultValue>69</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_server</name>
+          <defaultValue>kacd02-prf01-ins01-wfm18-dbs-01.int.acd.mykronos.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_name</name>
+          <defaultValue>ppas_auto_regression</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>destroy_wfm</name>
+          <description>Check this if you want to destroy the existing wfm.</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>wfc_stream</name>
+          <defaultValue>r9int</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>web_stream</name>
+          <defaultValue>r9int</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>environment_name</name>
+          <choices>
+            <string>PRF - Performance</string>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>unique_tag</name>
+          <defaultValue>perf_Core</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>extra_inputs</name>
+          <defaultValue>{"instance_id": "69",  "enable_monitoring": "True","build_level_dfi": "r9int","docker_build_level_ilb": "r9int"}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>neoload_test_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of Regression Test. Leave these empty to skip</sectionHeader>
+          <sectionHeaderStyle>
+                                                background-color: #dbdb8e;
+                                                text-align: center;
+                                                padding: 4px;
+                                                color: #343434;
+                                                font-size: 22px;
+                                                font-weight: normal;
+                                                text-transform: uppercase;
+                                                font-family: 'Orienta', sans-serif;
+                                                letter-spacing: 1px;
+                                                </sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>Timekeeping</name>
+          <description>Please check to run timekeeping test</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>IA</name>
+          <description>Please provide if you want to Deploy</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ia_project_path</name>
+          <description>Provide the path of the zip file which contains the .nlp file, relative to the Git Repository</description>
+          <defaultValue>regression\timekeeping\api\project\regression_api_test.zip</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>Scheduling</name>
+          <description>Please check to run Scheduling test</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>scheduling_project_path</name>
+          <description>Provide the path of the zip file which contains the .nlp file, relative to the Git Repository</description>
+          <defaultValue>regression\scheduling\HC_API_Regression_automation.zip</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>branch</name>
+          <description>Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where all the scripts are located. All the code and all the Neoload scripts should be in the same branch</description>
+          <defaultValue>develop</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>submitter</name>
+          <description>As firstname.lastname@kronos.com</description>
+          <defaultValue>abhishek.jain@ukg.com,tulika.kumari@ukg.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>nmon_iteration</name>
+          <description>Can not be empty</description>
+          <defaultValue>300</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>nmon_interval</name>
+          <description>Can not be empty</description>
+          <defaultValue>2</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>timekeeping_project_path</name>
+          <description>Provide the path of the zip file which contains the .nlp file, relative to the Git Repository</description>
+          <defaultValue>regression\timekeeping\api\project\regression_api_test.zip</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_users_count</name>
+          <description>Provide the number of users for which the license needs to be leased.</description>
+          <defaultValue>10</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_duration</name>
+          <description>Provide the duration for which the license needs to be leased.</description>
+          <defaultValue>1</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>//@Library('perf-pipeline-library') _
+
+// Define the Unique ID
+def uniq_id = System.currentTimeMillis()
+env.uniq_id = uniq_id
+
+def neoload_build_failed_timekeeping = 0
+def neoload_build_failed_IA = 0
+def neoload_build_failed_scheduling = 0
+def failed_scneraio_timekeeping = []
+def failed_scneraio_IA = []
+def failed_scneraio_scheduling = []
+def scenario=[]
+def cnt =0
+def project_path
+def nlp_file
+def splunk_file
+def content 
+def timekeeping_cnt=0
+def ia_cnt=0
+def scheduling_cnt=0
+//def neoload
+
+// Main Method starts here
+node { 
+	try{
+    label 'master || linux_node'
+	properties([
+	buildDiscarder(logRotator(numToKeepStr: '50')),
+                        parameters([
+		separator(name: "deploy_wfm_1", sectionHeader: "Provide below details to deploy regression WFM",
+                                            separatorStyle: "border-width: 0",
+                                            sectionHeaderStyle: """
+                                                background-color: #dbdb8e;
+                                                text-align: center;
+                                                padding: 4px;
+                                                color: #343434;
+                                                font-size: 22px;
+                                                font-weight: normal;
+                                                text-transform: uppercase;
+                                                font-family: 'Orienta', sans-serif;
+                                                letter-spacing: 1px;
+                                                """
+                                        ),
+                                booleanParam(name: 'deploy_wfm', defaultValue: false, description: 'Please provide if you want to Deploy'),
+                                string(name: 'release', defaultValue: 'r9int'),
+                                string(name: 'cluster_id', defaultValue: '69'),
+                                string(name: 'db_server', defaultValue: 'kacd02-prf01-ins01-wfm18-dbs-01.int.acd.mykronos.com'),
+                                string(name: 'db_name', defaultValue: 'ppas_auto_regression'),
+                                booleanParam(name: 'destroy_wfm', defaultValue: false, description: 'Check this if you want to destroy the existing wfm.'),
+                                string(name: 'wfc_stream', defaultValue: 'r9int'),
+                                string(name: 'web_stream', defaultValue: 'r9int'),
+                                choice(name: 'environment_name', choices: ['PRF - Performance']),
+                                string(name: 'unique_tag', defaultValue: 'perf_Core'),
+                                string(name: 'extra_inputs', defaultValue: '''{"instance_id": "69",  "enable_monitoring": "True","build_level_dfi": "r9int","docker_build_level_ilb": "r9int"}'''),
+                                
+                                separator(name: "neoload_test_details", sectionHeader: "Details of Regression Test. Leave these empty to skip",
+                                            separatorStyle: "border-width: 0",
+                                            sectionHeaderStyle: """
+                                                background-color: #dbdb8e;
+                                                text-align: center;
+                                                padding: 4px;
+                                                color: #343434;
+                                                font-size: 22px;
+                                                font-weight: normal;
+                                                text-transform: uppercase;
+                                                font-family: 'Orienta', sans-serif;
+                                                letter-spacing: 1px;
+                                                """
+                                        ),
+								booleanParam(name: 'Timekeeping', defaultValue: false, description: 'Please check to run timekeeping test'),
+								booleanParam(name: 'IA', defaultValue: false, description: 'Please provide if you want to Deploy'),
+								string(name: 'ia_project_path', defaultValue: "regression\\timekeeping\\api\\project\\regression_api_test.zip", description: 'Provide the path of the zip file which contains the .nlp file, relative to the Git Repository'),
+								booleanParam(name: 'Scheduling', defaultValue: false, description: 'Please check to run Scheduling test'),
+				string(name: 'scheduling_project_path', defaultValue: "regression\\scheduling\\HC_API_Regression_automation.zip", description: 'Provide the path of the zip file which contains the .nlp file, relative to the Git Repository'),	
+                                
+      		 string(name: 'branch', defaultValue: 'develop', description: 'Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where all the scripts are located. All the code and all the Neoload scripts should be in the same branch'),
+                                string(name: 'submitter', defaultValue: 'abhishek.jain@ukg.com,tulika.kumari@ukg.com', description: 'As firstname.lastname@kronos.com'),
+				string(name: 'nmon_iteration', defaultValue: '300', description: 'Can not be empty'),
+		                string(name: 'nmon_interval', defaultValue: '2', description: 'Can not be empty'),
+                                string(name: 'timekeeping_project_path', defaultValue: "regression\\timekeeping\\api\\project\\regression_api_test.zip", description: 'Provide the path of the zip file which contains the .nlp file, relative to the Git Repository'),
+                                string(name: 'test_users_count', defaultValue: '10', description: 'Provide the number of users for which the license needs to be leased.'),
+                                string(name: 'test_duration', defaultValue: '1', description: 'Provide the duration for which the license needs to be leased.'),
+                            ])])  
+	
+def allservers
+def fnt = []
+def bck = []
+def api = []
+def bgp = []
+def nsq = []
+def dmc = []
+def dmq = []
+def ins_dmq = []
+def db = []
+def db_server
+def db_name
+//def spark = []
+//def batch = []
+def execution_name
+	timestamps {
+    // some block
+
+
+}
+//MAIN execution
+	
+//	if(params.simulation.isEmpty() || params.submitter.isEmpty())
+//		throw new Exception("simulation and submitter can not be left empty.")
+
+// Clean the Workspace
+//	workspaceClean()
+
+// Download the PInt Code
+    //codeCheckOut()
+
+// Deploy WFM
+
+/*	if(params.deploy_wfm) {
+        execution_name = deployWFM()
+    } else {
+        execution_name = "WFM_HA_PIPELINE [wfm_50] [ins_50] [perf_SL]"
+    }*/
+    //execution_name = deployWFM()
+	//execution_name = "WFM_HA_PIPELINE [wfm_50] [ins_50] [perf_SL]"
+	
+// Fetch the WFM Details
+	
+	//echo "front:"+fnt+"\nback:"+bck+"\napi:"+api+"\nbgp:"+bgp+"\ndb_server:"+db_server+"\ndb_name:"+db_name
+
+// Create engperfuser based on the above details
+	//createWFMUsers()
+
+// Find all the servers and add to the list 
+	
+
+// Finally add engperfuser to all the deployments
+	//createDefaultUsers(allservers)
+
+// Configure the wfm backend configurations
+	//wfmBackendConfig()Not
+
+// Clear the Redis cache and start the WFM
+	//redisCacheClear()Not
+
+// Perform HealthCheck and install the NMON
+	
+	
+// Start the Warmup Job.
+	/*if(params.branch &amp;&amp; params.warmup_project_path &amp;&amp; params.warmup_scenario &amp;&amp; params.warmup_users_count &amp;&amp; params.warmup_duration &amp;&amp; params.submitter) {
+		neoloadWarmupTest()
+	}*/
+
+// Run the pre database script
+	/*if(params.pre_db_script_path) {
+		preDBScript()
+	}*/
+/*	stage('Download Neoload Code') 
+                    {
+                        def neoload = build(job: 'regression_neoload_checkout',
+                        parameters: [string(name: 'Branch', value: "${params.branch}")])
+                    }*/
+}
+catch (e)
+            {
+              notifyFailed()
+              currentBuild.result = "FAILURE"
+              return
+            }
+// Run the Main tests
+	//if(params.branch &amp;&amp; params.test_project_path &amp;&amp; params.test_scenario &amp;&amp; params.test_users_count &amp;&amp; params.test_duration &amp;&amp; params.submitter) {
+
+
+if (params.Timekeeping)
+{
+ cnt = cnt+1
+ timekeeping_cnt =1
+
+}
+if (params.Scheduling)
+{
+ cnt=cnt+1
+ scheduling_cnt=1
+}
+if (params.IA)
+{
+cnt=cnt+1
+ia_cnt=1
+}
+println("${timekeeping_cnt}")
+println("${ia_cnt}")
+println("${scheduling_cnt}")
+	
+println("cnt"+cnt)
+for(int i=0;i&lt;cnt;i++){
+println("${timekeeping_cnt}")
+println("${ia_cnt}")
+println("${scheduling_cnt}")
+def neoload_build_failed = 0
+def failed_scneraio = []
+//def scenario=["02-Approvals"]
+if(timekeeping_cnt){
+println("inside timekeep")
+project_path=params.timekeeping_project_path
+ scenario=["02-Approvals"]
+ nlp_file="regression_api.nlp"
+ splunk_file="SplunkReport_Timekeeping_${currentBuild.number}.xlsx"
+
+}
+else if ((timekeeping_cnt==0)&amp;&amp; (ia_cnt==1)){
+println("inside ia")
+project_path=params.ia_project_path
+ scenario=["01-IA_EmployeeSummary"]
+ nlp_file="ia_regression.nlp"
+ splunk_file="SplunkReport_IA_${currentBuild.number}.xlsx"
+}
+else if (((timekeeping_cnt==0)&amp;&amp; (ia_cnt==0))&amp;&amp; scheduling_cnt==1){
+project_path=params.scheduling_project_path
+ scenario=["00_Manager_Submission_Period","00_Manager_Schedule_Post_2weeks","01_Business_Structure_Locations","02_Employee_Schedule_Schedule_Desktop","03_Employee_Schedule_Schedule_Mobile","04_Manager_Schedule_FindByEmployee_Desktop","05_Manager_Schedule_FindByEmployee_Mobile","06_Manager_Schedule_Post_Unpost","07_Manager_Submission_Period_CUD","08_Manager_Shifts_CUD","09_Manager_Employee_Schedule_Patterns_CUD","10_Manager_PCE","11_Manager_Daylock","12_Employee_Time_Off","13_Manager_Time_Off","14_Manager_Schedule","15_Manager_Employment_terms","16_Workload_coverage"]
+ nlp_file="HC_API_Regression.nlp"
+ splunk_file="SplunkReport_Scheduling_${currentBuild.number}.xlsx"
+}
+
+
+println("${params.Timekeeping}")
+println("${params.IA}")
+
+	for(String item: scenario) {
+   
+	try{						 
+	stage('Execute Neoload Test') {
+	     
+	         def neoload = build(job: 'regression_neoload_execution',
+		parameters: [string(name: 'Branch', value: "${params.branch}"),
+		string(name: 'Project', value: "${project_path}"),
+		string(name: 'nlp_file', value: "${nlp_file}"),
+		string(name: 'Scenario', value: "${item}"),
+		string(name: 'Users', value: "10"),
+		string(name: 'Duration', value: "1"),
+		string(name: 'Submitter', value: "${params.submitter}")])
+		println("${env.neoload}")
+		env.Start_TIME = neoload.getBuildVariables().get('start_TimeStamp')
+        env.End_TIME = neoload.getBuildVariables().get('endTime')
+		copyArtifacts(projectName: 'regression_neoload_execution', selector: specific("${neoload.number}"))
+            println("${env.neoload}")    
+	         //	sleep 60
+	      }
+		  }
+	      catch(e) {
+	          println("${env.neoload}")
+			  failed_scneraio.add("${item}")
+			  println("Scenario Failed"+failed_scneraio)
+		neoload_build_failed = neoload_build_failed+1
+      echo e.toString() 
+
+	     }
+   
+    /* finally{
+                                env.CURRENT_TIME = neoload.getBuildVariables().get('currentDate')
+		env.Start_TIME = neoload.getBuildVariables().get('start_TimeStamp')
+		env.End_TIME = neoload.getBuildVariables().get('endTime')
+		println("start time"+${env.Start_TIME})
+											  
+	copyArtifacts(projectName: 'regression_neoload_execution', selector: specific("${neoload.number}"))
+	sleep 60
+                            }*/
+    
+    try{
+	stage('Splunk') {
+	    Splunk_build = build(job: 'regression_splunk_data',
+		parameters: [
+		string(name: 'start_time', value: "${env.Start_TIME}"),
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'scenario', value:"${item}" ),
+		string(name: 'file', value: "${splunk_file}"),
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'end_time', value: "${env.End_TIME}"),
+		string(name: 'db_cluster', value: "18"),
+		string(name: 'wfm_bck_node', value: "kacd02-prf01-ins69-wfm69-bck-1670223813-1.int.acd.mykronos.com")
+		])
+	//	sleep 60		
+	
+    }
+    }
+    catch(e){
+        println("inside catch")
+    }
+    
+	}
+	if(timekeeping_cnt){
+	     println("Scenario Failed"+failed_scneraio_timekeeping)
+				  			  println("Scenario Failed"+neoload_build_failed_timekeeping)
+	failed_scneraio_timekeeping=failed_scneraio
+	neoload_build_failed_timekeeping=neoload_build_failed
+	
+				  println("Scenario Failed"+failed_scneraio_timekeeping)
+				  			  println("Scenario Failed"+neoload_build_failed_timekeeping)
+							  timekeeping_cnt=0
+							  println("${timekeeping_cnt}")
+							  println("${ia_cnt}")
+							  println("${scheduling_cnt}")
+	}
+	else if(ia_cnt){
+	
+	println("Scenario Failed"+failed_scneraio_IA)
+				  			  println("Scenario Failed"+neoload_build_failed_IA)
+						failed_scneraio_IA=failed_scneraio
+	neoload_build_failed_IA=neoload_build_failed
+	println("Scenario Failed"+failed_scneraio_IA)
+				  			  println("Scenario Failed"+neoload_build_failed_IA)
+							  ia_cnt=0
+							  println("${ia_cnt}")
+	}
+	else if(scheduling_cnt){
+	
+	println("Scenario Failed"+failed_scneraio_scheduling)
+				  			  println("Scenario Failed"+neoload_build_failed_scheduling)
+						failed_scneraio_scheduling=failed_scneraio
+	neoload_build_failed_scheduling=neoload_build_failed
+	println("Scenario Failed"+failed_scneraio_scheduling)
+				  			  println("Scenario Failed"+neoload_build_failed_scheduling)
+							  scheduling_cnt=0
+							  println("${scheduling_cnt}")
+	}
+}
+
+	//	archiveArtifacts artifacts: '**/*', onlyIfSuccessful: true
+		
+		
+    stage('Email') {
+	    Splunk_build = build(job: 'regression_send_email',
+		parameters: [
+		string(name: 'Content', value: "Hi Team,&lt;br/&gt;&lt;br/&gt; Regression suite for GET API call is executed successfully under&lt;b&gt; Phase 1&lt;/b&gt;. Please find the attached csv for Response Time and CPU Utilization.&lt;br/&gt;&lt;html&gt;&lt;style&gt;table, th, td {border: 1px solid black;border-collapse: collapse;}&lt;/style&gt;&lt;body&gt;&lt;table&gt; &lt;tr&gt;&lt;th&gt;Test Name&lt;/th&gt;&lt;th&gt;Executed&lt;/th&gt;&lt;th&gt;Test Failed&lt;/th&gt;&lt;th&gt; List of Failed Tests&lt;/th&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt; Timekeeping&lt;/td&gt;&lt;td&gt;'${params.Timekeeping}' &lt;/td&gt;&lt;td&gt;'${neoload_build_failed_timekeeping}'&lt;/td&gt;&lt;td&gt;'${failed_scneraio_timekeeping}'&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;IA &lt;/td&gt;&lt;td&gt;'${params.IA}'&lt;/td&gt;&lt;td&gt;'${neoload_build_failed_IA}'&lt;/td&gt;&lt;td&gt;'${failed_scneraio_IA}'&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Scheduling &lt;/td&gt;&lt;td&gt;'${params.Scheduling}'&lt;/td&gt;&lt;td&gt;'${neoload_build_failed_scheduling}'&lt;/td&gt;&lt;td&gt;'${failed_scneraio_scheduling}'&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;&lt;br/&gt;&lt;b&gt;Regards,&lt;br/&gt;Perfautomation&lt;/b&gt;"),
+		string(name: 'Subject', value: "Regression Result |Build Number-${currentBuild.number}"),
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'Recipients', value: "${params.submitter}")])
+		
+		
+			}
+	
+	
+	
+   
+	
+
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

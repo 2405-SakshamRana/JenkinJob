@@ -1,0 +1,103 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1145.v7f2433caa07f">
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.33.1">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>backend_nodes</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>bgp_nodes</name>
+          <description>Please provide the BGP node, API node, UDM node with comma-separated values. </description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.8">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2660.vb_c0412dc4e6d">
+    <script>// Powered by Infostretch 
+
+timestamps {
+
+    node ('master || linux_node') { 
+        stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }
+        stage ("Copy required files from PIntCode project"){
+            script{
+                copyArtifacts filter: 'PIntCode/bin/util.wfm_pint.bash', projectName: 'GetPIntCode',selector: lastSuccessful()
+            }
+        }
+    	stage ('wfm_configuration') {
+            withCredentials([
+                usernamePassword(credentialsId: 'engperfuser', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME'),
+            ]) {
+                sh ''' 
+                #!/bin/bash
+                set -eo pipefail
+                export USERNAME="${USERNAME}"
+                export PASSWORD="${PASSWORD}"
+                export CACHEDIR="${WORKSPACE}"
+                source "${WORKSPACE}"/PIntCode/bin/util.wfm_pint.bash
+                
+                export backend="${backend_nodes}"
+                export bgp_backend="${bgp_nodes}"
+
+                if [[ (-z "$backend_nodes") ]]; then
+                	echo "$backend_nodes cannot be empty"
+                    exit 1
+                fi
+                if [[ (-z "bgp_nodes") ]]; then
+                	echo "$bgp_nodes cannot be empty"
+                    exit 1
+                fi
+                
+                export version=1.0
+                export currenttime="$(date +"%Y_%m_%d_%H_%M")"
+                #export currenttime="${currentBuild.startTimeInMillis}"
+
+                wfm_configuration 
+                '''
+            }
+    	}
+    	stage('CleanWorkspace') {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") { deleteDir() }
+            dir("${env.WORKSPACE}@script") { deleteDir() }
+            dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+        }
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

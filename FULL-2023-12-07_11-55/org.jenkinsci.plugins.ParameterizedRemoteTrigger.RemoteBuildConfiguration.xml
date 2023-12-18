@@ -1,0 +1,49 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteBuildConfiguration_-DescriptorImpl plugin="Parameterized-Remote-Trigger@3.1.5.1">
+  <remoteSites>
+    <org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteJenkinsServer>
+      <displayName>Deploy</displayName>
+      <hasBuildTokenRootSupport>false</hasBuildTokenRootSupport>
+      <trustAllCertificates>false</trustAllCertificates>
+      <overrideTrustAllCertificates>false</overrideTrustAllCertificates>
+      <auth2 class="org.jenkinsci.plugins.ParameterizedRemoteTrigger.auth2.CredentialsAuth">
+        <credentials>svcci-deploy-gcp</credentials>
+      </auth2>
+      <address>https://jenkins-deploy.dev.mykronos.com/</address>
+      <useProxy>false</useProxy>
+    </org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteJenkinsServer>
+    <org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteJenkinsServer>
+      <displayName>Pipeline-k8s</displayName>
+      <hasBuildTokenRootSupport>false</hasBuildTokenRootSupport>
+      <trustAllCertificates>false</trustAllCertificates>
+      <overrideTrustAllCertificates>false</overrideTrustAllCertificates>
+      <auth2 class="org.jenkinsci.plugins.ParameterizedRemoteTrigger.auth2.CredentialsAuth">
+        <credentials>svcci-pipeline-k8s-gcp</credentials>
+      </auth2>
+      <address>https://build.falcon.kronos.com/pipeline-k8s</address>
+      <useProxy>false</useProxy>
+    </org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteJenkinsServer>
+    <org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteJenkinsServer>
+      <displayName>Kate01</displayName>
+      <hasBuildTokenRootSupport>false</hasBuildTokenRootSupport>
+      <trustAllCertificates>true</trustAllCertificates>
+      <overrideTrustAllCertificates>false</overrideTrustAllCertificates>
+      <auth2 class="org.jenkinsci.plugins.ParameterizedRemoteTrigger.auth2.CredentialsAuth">
+        <credentials>8563adab-fbc7-40ab-a95f-1462253842e0</credentials>
+      </auth2>
+      <address>https://pap-in-kate01.int.kronos.com:8443</address>
+      <useProxy>false</useProxy>
+    </org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteJenkinsServer>
+    <org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteJenkinsServer>
+      <displayName>sqkatelinux</displayName>
+      <hasBuildTokenRootSupport>false</hasBuildTokenRootSupport>
+      <trustAllCertificates>false</trustAllCertificates>
+      <overrideTrustAllCertificates>false</overrideTrustAllCertificates>
+      <auth2 class="org.jenkinsci.plugins.ParameterizedRemoteTrigger.auth2.CredentialsAuth">
+        <credentials>8563adab-fbc7-40ab-a95f-1462253842e0</credentials>
+      </auth2>
+      <address>https://tap-sqkatelinux.int.kronos.com:8443</address>
+      <useProxy>false</useProxy>
+    </org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteJenkinsServer>
+  </remoteSites>
+</org.jenkinsci.plugins.ParameterizedRemoteTrigger.RemoteBuildConfiguration_-DescriptorImpl>

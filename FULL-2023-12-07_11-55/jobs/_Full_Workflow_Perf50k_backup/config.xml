@@ -1,0 +1,1201 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2118.v31fd5b_9944b_5"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2118.v31fd5b_9944b_5">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>N</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+    <org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction plugin="workflow-multibranch@716.vc692a_e52371b_">
+      <jobPropertyDescriptors>
+        <string>hudson.model.ParametersDefinitionProperty</string>
+        <string>jenkins.model.BuildDiscarderProperty</string>
+      </jobPropertyDescriptors>
+    </org.jenkinsci.plugins.workflow.multibranch.JobPropertyTrackerAction>
+  </actions>
+  <description>This job requires existing ACD HA WFM. Only ACD is supported.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>5</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>deploy_wfm_1</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Provide below details to deploy new WFM</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>deploy_wfm</name>
+          <description>Please provide if you want to Deploy</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>skip_setup</name>
+          <description>This parameter will skip all the environmental setup piece and just start executing the tests.</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>release</name>
+          <defaultValue>r9int</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>cluster_id</name>
+          <defaultValue>50</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_server</name>
+          <defaultValue>kacd02-prf05-ins01-wfm07-dbs-01.int.acd.mykronos.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_name</name>
+          <defaultValue>ppas_50k</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>destroy_wfm</name>
+          <description>Check this if you want to destroy the existing wfm.</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>wfc_stream</name>
+          <defaultValue>r9int</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>web_stream</name>
+          <defaultValue>r9int</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>environment_name</name>
+          <choices>
+            <string>PRF - Performance</string>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>unique_tag</name>
+          <description>Unique tag to identify the WFMs in a particular environment. For Performnace Shift Left, unique tag will be "perf_SL". For Performnace Core, unique tag will be "perf_Core". For Performnace 500K, unique tag will be "perf_500K".</description>
+          <defaultValue>perf_SL</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>extra_inputs</name>
+          <defaultValue>{"instance_id": "50", "redis_hosts": "kacd02-prf05-ins01-wfm06-dmc-1.int.acd.mykronos.com:26379,kacd02-prf05-ins01-wfm06-dmc-2.int.acd.mykronos.com:26381,kacd02-prf05-ins01-wfm06-dmc-3.int.acd.mykronos.com:26382", "redis_master": "kacd02-prf05-ins01-wfm06-dmc-1.int.acd.mykronos.com", "enable_monitoring": "True","build_level_dfi": "r9int","docker_build_level_ilb": "r9int","sa_num": "bck=1,bgp=1,bgi=0,fnt=1,api=1,udm=0","datastx_analytic_nodes":"kacd02-prf05-ins01-fcs05-nsq-1.int.acd.mykronos.com","astra_zdm_nodes":"","sch_redis_hosts":"","sch_redis_master":""}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>neload_test_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>ACD HA WFM details.</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>branch</name>
+          <description>Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where all the scripts are located. All the code and all the Neoload scripts should be in the same branch</description>
+          <defaultValue>develop</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>submitter</name>
+          <description>As firstname.lastname@kronos.com</description>
+          <defaultValue>tulika.kumari@ukg.com,abhishek.jain@ukg.com,arash.yamin@ukg.com,doug.tilkin@ukg.com,john.woolley@ukg.com,karl.paxton@ukg.com,lilin.tan@ukg.com,mahdi.alhady@ukg.com,,moses.chang@ukg.com,paul.sullivan@ukg.com,saurabh.tyagi@ukg.com,thara.vadakkeveedu@ukg.com,hingtung.tsang@ukg.com,tri.la@ukg.com,vishwanth.krish@ukg.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>nmon_iteration</name>
+          <description>Can not be empty</description>
+          <defaultValue>12600</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>nmon_interval</name>
+          <description>Can not be empty</description>
+          <defaultValue>2</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>warm_up_script_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of Warm Up Neoload script, leave these empty to skip.</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_project_path</name>
+          <description>Path of a zip file containing .nlp file, relative to the workspace. Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where warmup scripts are located.</description>
+          <defaultValue>SL_50k_Warmup_PublicAPI</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_scenario</name>
+          <description>Name of warmup scenario in the project, in case of multiple scenarios please input comma separated values.</description>
+          <defaultValue>50k_Combined_Warmup</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_users_count</name>
+          <description>User count for license</description>
+          <defaultValue>301</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>warmup_lg</name>
+          <description>LG required</description>
+          <defaultValue>8</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>database_script_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of Database script, leave these empty to skip.</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>pre_db_script_path</name>
+          <description>Path relative "performance/bin" directory</description>
+          <defaultValue>bin/sqlscript/50k_sl_prevalidation</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>post_db_script_path</name>
+          <description>Path relative "performance/bin" directory</description>
+          <defaultValue>bin/sqlscript/50k_sl_postvalidation</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>test_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of Main 50K Test. Leave these empty to skip</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ZipFileName</name>
+          <description>The name of the zip file contain your jmx file, batch file and seed data without .zip</description>
+          <defaultValue>PublicRegressionAPIs</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>BatchFileName</name>
+          <description>Name of the batch file for JMeter Execution without the .bat</description>
+          <defaultValue>RunPublicRegressionTestAPIs</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Scheduling_ZipFileName</name>
+          <description>The name of the zip file contain your jmx file, batch file and seed data without .zip</description>
+          <defaultValue>HC_PublicRegressionAPIs</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>Scheduling_BatchFileName</name>
+          <description>Name of the batch file for JMeter Execution without the .bat</description>
+          <defaultValue>RunHCPublicRegressionTestAPIs</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_project_path</name>
+          <description>Provide the path of the zip file which contains the .nlp file, relative to the Git Repository</description>
+          <defaultValue>SL_50k_MainTest</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_scenario</name>
+          <description>Provide the Scenario Name which needs to be executed, in case of multiple scenarios, input comma-separated values.</description>
+          <defaultValue>50k_Combined_MainTest</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_users_count</name>
+          <description>Provide the number of users for which the license needs to be leased.</description>
+          <defaultValue>510</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>test_lg</name>
+          <description>Provide the number of LG</description>
+          <defaultValue>12</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>WFM_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of 50k WFM</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>db_cluster</name>
+          <description>Provide Db Cluster ID</description>
+          <defaultValue>07</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <jenkins.plugins.parameter__separator.ParameterSeparatorDefinition plugin="parameter-separator@1.3">
+          <name>revert_details</name>
+          <separatorStyle>border-width: 0</separatorStyle>
+          <sectionHeader>Details of 50k Revert Test Script. Leave these empty to skip</sectionHeader>
+          <sectionHeaderStyle>
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				</sectionHeaderStyle>
+        </jenkins.plugins.parameter__separator.ParameterSeparatorDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_project_path</name>
+          <description>Provide the path of the zip file which contains the .nlp file, relative to the Git Repository</description>
+          <defaultValue>Reverts</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_scenario</name>
+          <description>Provide the Scenario Name which needs to be executed, in case of multiple scenarios, input comma-separated values.</description>
+          <defaultValue>50k_Revert</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_users_count</name>
+          <description>Provide the number of users for which the license needs to be leased.</description>
+          <defaultValue>220</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>revert_lg</name>
+          <description>Provide the the lg</description>
+          <defaultValue>10</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>// Define the Unique ID
+def uniq_id = System.currentTimeMillis()
+env.uniq_id = uniq_id
+
+// Stage 1:- Stage to Clean the Workspace
+	def workspaceClean() 
+		{
+			stage('CleanWorkspace') 
+				{
+        			cleanWs()
+			        dir("${env.WORKSPACE}@tmp") { deleteDir() }
+			        dir("${env.WORKSPACE}@script") { deleteDir() }
+			        dir("${env.WORKSPACE}@script@tmp") { deleteDir() }
+				}
+		}
+
+// Stage 2:- Stage to download the PIntCode
+	def codeCheckOut(){
+	    stage('Call PIntCode Job') {
+		    def getcode_build = build(job: 'GetPIntCode', parameters: [])
+			//copyArtifacts(projectName: 'GetPIntCode', selector: specific("${getcode_build.number}"))		
+	    }
+	}
+
+// Stage 3:- Stage to deploy New WFM 
+def deployWFM(){	
+    stage('Deploy WFM') {
+	    def submitters = "${params.submitter}"
+        println submitters
+        def firstSubmitter = submitters.tokenize(",")[0]
+        println firstSubmitter
+        
+		def build_result = build(job: 'WFM_Deploy_Perf_ACD', 
+		parameters: [string(name: 'RELEASE', value: "${params.release}"),
+		string(name: 'WFC_STREAM', value: "${params.wfc_stream}"),
+		string(name: 'WEB_STREAM', value: "${params.web_stream}"),
+		string(name: 'ENVIRONMENT_NAME', value: "${params.environment_name}"),
+		string(name: 'WFM_DEPLOYMENT_INFO', value: """
+		[
+  {
+    "INDEX": "1",
+    "CLUSTER_ID": "perf_${params.cluster_id}",
+    "DB_SERVER": "${params.db_server}",
+    "DB_SID": "${params.db_name}"
+  }
+]
+		"""),
+		string(name: 'OWNER', value: "${firstSubmitter}"),
+		string(name: 'UNIQUE_TAG', value: "${params.unique_tag}"),
+		string(name: 'EXTRA_INPUTS', value: "${params.extra_inputs}"),
+		string(name: 'DESTROY_WFM', value: "${params.destroy_wfm}")
+		])
+	    if(!build_result.getBuildVariables().get('EXECUTION_NAME_1'))
+			throw new Exception("EXECUTION_NAME_1 is not found!")
+		else {
+			execution_name = build_result.getBuildVariables().get('EXECUTION_NAME_1')
+			println "deployment name: " + execution_name
+		}
+		copyArtifacts(projectName: 'WFM_Deploy_Perf_ACD', selector: specific("${build_result.number}"))	
+		return execution_name
+	}
+}
+
+// Stage 4:- Fetch the WFM Information from the Rightscale 
+def findDeploymentDetails(def String execution_name) {
+	stage('Fetch WFM Details') { 
+       def build_result = build(job: 'Fetch_deployment_Details', parameters: [string(name: 'EXECUTION_NAME', value: execution_name)])
+        println "${build_result.number}"
+		env.fnt = build_result.getBuildVariables().get('fnt')
+		env.bck = build_result.getBuildVariables().get('bck')
+		env.api = build_result.getBuildVariables().get('api')
+		env.bgp = build_result.getBuildVariables().get('bgp')
+		env.db_server = build_result.getBuildVariables().get('param_dbserver')
+		env.db_name = build_result.getBuildVariables().get('param_dbname')
+		println env.fnt + "," + env.bck + "," + env.api + "," + env.bgp + "," + env.db_server + "," + env.db_name
+		if (!fnt || !bck || !api || !bgp || !db_server || !db_name)
+			throw new Exception("fnt/bgp/api/bck/param_dbserver could not be found!")
+		copyArtifacts(projectName: 'Fetch_deployment_Details', selector: specific("${build_result.number}"))
+	}
+}
+
+// Stage 5:- Add engperfuser to all the wfm
+def createWFMUsers() {
+	stage("Create users on WFM nodes") {
+		def wfm_nodes = []
+		wfm_nodes += env.fnt
+		wfm_nodes += env.bck
+		wfm_nodes += env.api
+		wfm_nodes += env.bgp
+		wfm_nodes += env.db_server
+		println "wfm_nodes: " + wfm_nodes.toString()
+        script {
+          def allJobs = [:]
+          for(def curJob=0; curJob&lt;wfm_nodes.size(); curJob++) {
+			def jobName = wfm_nodes[curJob]
+            allJobs[jobName] =  {
+			  stage(jobName) {
+				build (job: "create_default_users",
+                    parameters:
+                    [string(name: 'PROJECT', value: "gce_automation_cd"), string(name: 'SERVER_NAME', value: jobName)])
+			}
+            }
+          }
+          parallel(allJobs)
+        }   
+    }
+}
+
+// Stage 6:- Find all the servers which are used in the tests executions
+def findAllServers() {
+	def allservers
+	stage('find_allservers') {
+		println "backend: ${env.bck}, frontend: ${env.fnt}, api_node: ${env.api}, bgp_node: ${env.bgp}, db_server: ${env.db_server}"
+		def build_result = build(job: 'find_allservers', parameters: [string(name: 'backend', value: env.bck),
+		string(name: 'frontend', value: env.fnt),string(name: 'api_node', value: env.api),string(name: 'bgp_node', value: env.bgp),string(name: 'db_server', value: params.db_server)])
+        println "${build_result.number}"
+	    if(!build_result.getBuildVariables().get('allservers'))
+			throw new Exception("allservers is not found!")
+		else
+			println build_result.getBuildVariables().get('allservers')
+		
+		allservers = build_result.getBuildVariables().get('allservers').split(',')
+	}
+	return allservers
+}
+
+// Stage 7:- Restart Splunk
+def restartSplunk() {
+	stage("Restart the Splunk") {
+		def wfm_nodes = []
+		wfm_nodes += env.fnt
+		wfm_nodes += env.bck
+		wfm_nodes += env.api
+		wfm_nodes += env.bgp
+		println "wfm_nodes: " + wfm_nodes.toString()
+        script {
+          def allJobs = [:]
+          for(def curJob=0; curJob&lt;wfm_nodes.size(); curJob++) {
+			def jobName = wfm_nodes[curJob]
+            allJobs[jobName] =  {
+			  stage(jobName) {
+				build (job: "enablesplunkagent", parameters:[string(name: 'wfm_name', value: jobName)])
+			}
+            }
+          }
+          parallel(allJobs)
+        }   
+    }
+}
+
+// Stage 8:- Enable Datadog
+def enableDatadog() {
+	stage("Enable the Datadog") {
+		def wfm_nodes = []
+		wfm_nodes += env.fnt
+		wfm_nodes += env.bck
+		wfm_nodes += env.api
+		wfm_nodes += env.bgp
+		println "wfm_nodes: " + wfm_nodes.toString()
+        script {
+          def allJobs = [:]
+          for(def curJob=0; curJob&lt;wfm_nodes.size(); curJob++) {
+			def jobName = wfm_nodes[curJob]
+            allJobs[jobName] =  {
+			  stage(jobName) {
+				build (job: "enable_datadog", parameters:[string(name: 'server_fqdn', value: jobName)])
+			}
+            }
+          }
+          parallel(allJobs)
+        }   
+    }
+}
+
+// Stage 9:- Add engperfuser to all the servers which are fetched in previous steps
+def createDefaultUsers(def allservers) {
+	stage("Create users") {
+        script {
+          def allJobs = [:]
+          for(def curJob=0; curJob&lt;allservers.size(); curJob++) {
+            //def jobName = "JOB-" + curJob
+			def jobName = allservers[curJob]
+            allJobs[jobName] =  {
+			  stage(jobName) {
+				build (job: "create_default_users",
+                    parameters:
+                    [string(name: 'PROJECT', value: "gce_automation_cd"), string(name: 'SERVER_NAME', value: jobName)])
+			}
+            }
+          }
+          parallel(allJobs)
+        }   
+    }
+}
+
+// Stage 10:- Perform the backend and bgp nodes configuration.
+def wfmBackendConfig() {
+	stage('wfm_backend_configuration') {
+		build(job: 'wfm_backend_configuration', parameters: [
+		string(name: 'backend_nodes', value: "${env.bck}"),
+		string(name: 'bgp_nodes', value: "${env.bgp},${env.api}")
+		])
+	}
+}
+
+// Stage 11:- Clear the Redis Cache and start the wfm
+def redisCacheClear() {
+	stage('Clear Redis Cache') {
+		def clear_redis_cache_build = build(job: 'clear_redis_cache', parameters: [
+		string(name: 'backend_nodes', value: "${env.bck}"),
+		string(name: 'bgp_nodes', value: "${env.bgp},${env.api}")
+		])
+		//copyArtifacts(projectName: 'clear_redis_cache', selector: specific("${clear_redis_cache_build.number}"))		
+	}
+}
+
+// Stage 12:- Check the health of all the servers and install the nmon.
+def healthCheck() {
+	stage('server_health_check') {
+		server_health_check_build = build(job: 'server_health_check',
+		parameters: [string(name: 'nmon_interval', value: "${params.nmon_interval}"),
+		string(name: 'nmon_iteration', value: "${params.nmon_iteration}"),
+		string(name: 'servers_fqdn', value: "${env.fnt},${env.bck},${env.api},${env.bgp},${env.dmc},${env.dmq},${env.ins_dmq},${env.db_server}"),
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'email_recipients', value: "${params.submitter}")
+		])
+		//copyArtifacts(projectName: 'server_health_check', selector: specific("${server_health_check_build.number}"))
+	}
+	server_health_check_build_number = server_health_check_build.number
+	return server_health_check_build_number
+}
+
+// Stage 13:- Download the NeoLoad Repo
+def Get_Neoload_Repo(){
+    def getcode_build = build(job: 'Get_Neoload_Repo', parameters: [])
+	//copyArtifacts(projectName: 'Get_Neoload_Repo', selector: specific("${getcode_build.number}"))																									
+}
+
+// Stage 14:- Execute the 50K API Test Warmup
+def neoloadwebWarmupTest() {
+	stage('Warm-up test') {
+		def neoload_build = build(job: 'Neoload_webcli',
+		parameters: [
+//string(name: 'Branch', value: "${params.branch}"),
+		string(name: 'Project', value: "${params.warmup_project_path}"),
+		string(name: 'Scenario', value: "${params.warmup_scenario}"),
+		string(name: 'Vusers', value: "${params.warmup_users_count}"),
+		string(name: 'Load_Generators', value: "${params.warmup_lg}"),
+		//string(name: 'Submitter', value: "${params.submitter}")
+		])
+		//copyArtifacts(projectName: 'Neoload_webcli', selector: specific("${neoload_build.number}"))		
+	}
+}
+
+// Stage 15a:- Execute the Timekeeping Regression Test and then capture the Splunk data and then prepare the report
+def Jmeter_Execution() {
+	stage('Jmeter_Execution') {
+	    def Jmeter_build = build(job: 'Jmeter_Execution',
+		parameters: [
+		string(name: 'ZipFileName', value: "${params.ZipFileName}"),
+		string(name: 'BatchFileName', value: "${params.BatchFileName}")
+		])
+        env.CURRENT_TIME_reg = Jmeter_build.getBuildVariables().get('currentDate')
+		env.Start_TIME_reg = Jmeter_build.getBuildVariables().get('start_TimeStamp')
+		env.End_TIME_reg = Jmeter_build.getBuildVariables().get('endTime')
+		copyArtifacts(projectName: 'Jmeter_Execution', selector: specific("${Jmeter_build.number}"))		
+	}
+}
+
+// Stage 15b:- Get the Splunk data
+def Splunk_reg() {
+	stage('Splunk_reg') {
+	    def Splunk_build = build(job: 'Splunk_reg',
+		parameters: [
+		string(name: 'start_time', value: "${env.Start_TIME_reg}"),
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'end_time', value: "${env.End_TIME_reg}"),
+	    string(name: 'db_cluster', value: "${params.db_cluster}"),
+		string(name: 'wfm_bck_node', value: "${env.bck}"),
+		string(name: 'filename', value: "Response_Time_Timekeeping.xlsx")
+		])
+		copyArtifacts(projectName: 'Splunk_reg', selector: specific("${Splunk_build.number}"))	
+	}
+}
+
+// Stage 15c:- Prepare the timekeeping report
+def Regression_Report() {
+	stage('Regression_Report') {
+	    def report_build = build(job: 'Regression_Report',
+		parameters: [
+		string(name: 'start_time', value: "${env.Start_TIME_reg}"),
+		string(name: 'subject', value: "Timekeeping Regression"),
+		string(name: 'end_time', value: "${env.End_TIME_reg}"),
+        string(name: 'email_recipients', value: "${params.submitter}"),
+		string(name: 'unique', value: "${env.uniq_id}")		
+		])
+		//copyArtifacts(projectName: 'Splunk_reg', selector: specific("${Splunk_build.number}"))	
+	}
+}
+
+// Stage 16a:- Execute the Scheduling Regression Test and then capture the Splunk data and then prepare the report
+def Jmeter_Execution_Scheduling() {
+	stage('Jmeter_Execution') {
+	    def Jmeter_build = build(job: 'Jmeter_Execution',
+		parameters: [
+		string(name: 'ZipFileName', value: "${params.ZipFileName}"),
+		string(name: 'BatchFileName', value: "${params.BatchFileName}")
+		])
+        env.CURRENT_TIME_reg = Jmeter_build.getBuildVariables().get('currentDate')
+		env.Start_TIME_reg = Jmeter_build.getBuildVariables().get('start_TimeStamp')
+		env.End_TIME_reg = Jmeter_build.getBuildVariables().get('endTime')
+		copyArtifacts(projectName: 'Jmeter_Execution', selector: specific("${Jmeter_build.number}"))		
+	}
+}
+
+// Stage 16b:- Get the Splunk data
+def Splunk_reg_Scheduling() {
+	stage('Splunk_reg') {
+	    def Splunk_build = build(job: 'Splunk_reg',
+		parameters: [
+		string(name: 'start_time', value: "${env.Start_TIME_reg}"),
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'end_time', value: "${env.End_TIME_reg}"),
+		string(name: 'db_cluster', value: "${params.db_cluster}"),
+		string(name: 'wfm_bck_node', value: "${env.bck}"),
+		string(name: 'filename', value: "Response_Time_Scheduling.xlsx")
+		])
+			copyArtifacts(projectName: 'Splunk_reg', selector: specific("${Splunk_build.number}"))	
+	}
+}
+
+// Stage 16c:- Prepare the timekeeping report
+def Regression_Report_Scheduling() {
+	stage('Regression_Report_Scheduling') {
+	    def report_build = build(job: 'Regression_Report',
+		parameters: [
+		string(name: 'start_time', value: "${env.Start_TIME_reg}"),
+		string(name: 'subject', value: "Scheduling Regression"),
+		string(name: 'end_time', value: "${env.End_TIME_reg}"),
+        string(name: 'email_recipients', value: "${params.submitter}"),
+		string(name: 'unique', value: "${env.uniq_id}")
+		])
+			//copyArtifacts(projectName: 'Splunk_reg', selector: specific("${Splunk_build.number}"))	
+	}
+}
+
+//Stage 17:- Execute the Pre Database Script
+def preDBScript() {
+	stage('Pre-DB Script') {
+		def pre_db = build(job: 'execute_pre_db_script',
+		parameters: [string(name: 'pre_db_script_path', value: "${params.pre_db_script_path}"),
+		string(name: 'db_server', value: "${params.db_server}"),
+		string(name: 'db_name', value: "${params.db_name}")
+		])
+		//copyArtifacts(projectName: 'execute_pre_db_script', selector: specific("${pre_db.number}"))		
+	}
+}
+
+// Stage 18:- Start the Neoload Main tests.
+def neoloadwebMainTest() {
+	stage('Execute Neoload Test') {
+		def neoload = build(job: 'Neoload_webcli',
+		parameters: [
+		string(name: 'Project', value: "${params.test_project_path}"),
+		string(name: 'Scenario', value: "${params.test_scenario}"),
+		string(name: 'Vusers', value: "${params.test_users_count}"),
+		string(name: 'Load_Generators', value: "${params.test_lg}"),
+		])
+		env.CURRENT_TIME = neoload.getBuildVariables().get('currentDate')
+		env.Start_TIME = neoload.getBuildVariables().get('start_TimeStamp')
+		env.End_TIME = neoload.getBuildVariables().get('endTime')
+											  
+		copyArtifacts(projectName: 'Neoload_webcli', selector: specific("${neoload.number}"))		
+	}
+}
+
+// Stage 19:- Execute the Post Database Script
+def postDBScript() {
+	stage('Post-DB Script') {
+		build_result14 = build(job: 'execute_post_db_script',
+		parameters: [string(name: 'post_db_script_path', value: "${params.post_db_script_path}"),
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'db_server', value: "${params.db_server}"),
+		string(name: 'db_name', value: "${params.db_name}")
+		])
+		//copyArtifacts(projectName: 'execute_post_db_script', selector: specific("${build_result14.number}"))			
+	}
+	build_result14_number = build_result14.number
+	return build_result14_number
+}
+
+// Stage 20:- Publish Artifacts
+def publishArtifacts() {
+	stage('Publish Artifacts') {
+        archiveArtifacts artifacts: '**/*', onlyIfSuccessful: true
+    }
+}
+
+// Stage 21:- Collect the NMON Data and parse the nmon data
+def nmonCollectionParse() {
+	stage('nmon_collection_and_parse') {
+	build_result17 = build(job: 'nmon_collection_and_parse',
+		parameters: [
+		string(name: 'servers_fqdn', value: "${env.fnt},${env.bck},${env.api},${env.bgp},${env.dmc},${env.dmq},${env.ins_dmq},${env.db_server}"),
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'email_recipients', value: "${params.submitter}")
+		])
+		//copyArtifacts(projectName: 'nmon_collection_and_parse', selector: specific("${build_result17.number}"))		
+	}
+}
+
+// Stage 22:- Prepare steady state NMON Result
+def nmonCpuSteadyState() {
+	stage('nmon_extract_cpu_steady_state') {
+	def steady_state_duration="01:20"
+	def ramup_time="00:20"
+	def neoload_startup_time="00:0.5"
+	    build_result15 = build(job: 'nmon_extract_cpu_steady_state',
+		parameters: [
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'neoload_startup_time', value: "${neoload_startup_time}"),
+		string(name: 'ramup_time', value: "${ramup_time}"),
+		string(name: 'steady_state_duration', value: "${steady_state_duration}"),
+		string(name: 'job_start_time', value: "${env.CURRENT_TIME}"),
+		string(name: 'email_recipients', value: "${params.submitter}")
+		])
+		copyArtifacts(projectName: 'nmon_extract_cpu_steady_state', selector: specific("${build_result15.number}"))		
+	}
+	build_result15_number = build_result15.number
+	return build_result15_number
+}
+
+// Stage 23:- Download the logs
+def logsDownload() {
+	stage('Download_Logs') {
+		build_result18 = build(job: 'Download_Logs',
+		parameters: [
+		string(name: 'servers_fqdn', value: "${env.fnt},${env.bck},${env.api},${env.bgp},${env.dmc},${env.dmq},${env.ins_dmq},${env.db_server}"),		
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'email_recipients', value: "${params.submitter}")
+		])
+		//copyArtifacts(projectName: 'Download_Logs', selector: specific("${build_result18.number}"))		
+	}
+}
+
+// Stage 24:- Compare the nmon results with the baseline
+def compareCpuBaseline() {
+	stage('cpu_comparison_with_baseline') {
+	     build_result19 = build(job: 'cpu_comparison_with_baseline',
+	    parameters: [string(name: 'unique', value: "${env.uniq_id}"),
+	    string(name: 'email_recipients',value: "${params.submitter}")
+        ])
+		//copyArtifacts(projectName: 'cpu_comparison_with_baseline', selector: specific("${build_result19.number}"))		
+    }
+	build_result19_number = build_result19.number
+	return build_result19_number
+}
+
+// Stage 25:- Capture the Response time data for 50K Public API Tests from Splunk
+def Splunk() {
+	stage('Splunk') {
+	    def Splunk_build = build(job: 'Splunk',
+		parameters: [
+		string(name: 'start_time', value: "${env.Start_TIME}"),
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'end_time', value: "${env.End_TIME}"),
+        string(name: 'db_cluster', value: "${params.db_cluster}"),
+		string(name: 'wfm_bck_node', value: "${env.bck}")
+		])
+			copyArtifacts(projectName: 'Splunk', selector: specific("${Splunk_build.number}"))	
+	}
+}
+
+// Stage 26:- Execute the Revert Script
+def neoloadwebRevertTest() {
+	stage('execute_neoload_revert_tests') {
+		def neoload = build(job: 'Neoload_webcli',
+		parameters: [
+		string(name: 'Project', value: "${params.revert_project_path}"),
+		string(name: 'Scenario', value: "${params.revert_scenario}"),
+		string(name: 'Vusers', value: "${params.revert_users_count}"),
+		string(name: 'Load_Generators', value: "${params.revert_lg}"),
+		])
+		copyArtifacts(projectName: 'Neoload_webcli', selector: specific("${neoload.number}"))		
+	}
+}
+
+// Stage 27:- Tar the unique folder data
+def tarUniqueFolder() {
+		stage('Tar_Unique_Folder') {
+		Tar_Unique_Folder_build = build(job: 'Tar_Unique_Folder',
+		parameters: [string(name: 'unique', value: "${env.uniq_id}"),
+		])
+	}
+	Tar_Unique_Folder_build_number = Tar_Unique_Folder_build.number
+	return Tar_Unique_Folder_build_number
+}
+
+// Stage 28:- Publish the 50K Report
+def publishReport() {
+	stage('publish_report') {
+		def build_result21 = build(job: 'publish_report',
+		parameters: [string(name: 'master_build_no', value: "${env.BUILD_NUMBER}"),
+		string(name: 'unique', value: "${env.uniq_id}"),
+		string(name: 'email_recipients', value: "${params.submitter}"),
+		string(name:'server_health_check_build_no',value:"${env.server_health_check_number}"), 
+		string(name: 'cpu_comparison_build_no', value:"${env.build_result19_number}"),
+		string(name: 'steady_state_build_no', value:"${env.build_result15_number}"),
+		string(name: 'execute_post_db_build_no', value:"${env.build_result14_number}")
+		])
+	}
+}
+
+
+
+
+
+// Main Method starts here
+node('master') { 
+	try {
+    label 'master || linux_node'
+	properties([
+		buildDiscarder(logRotator(numToKeepStr: '5')),
+		parameters([
+			separator(name: "deploy_wfm_1", sectionHeader: "Provide below details to deploy new WFM",
+				separatorStyle: "border-width: 0",
+				sectionHeaderStyle: """
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				"""
+			),
+			booleanParam(name: 'deploy_wfm', defaultValue: false, description: 'Please provide if you want to Deploy'),
+			booleanParam(name: 'skip_setup', defaultValue: true, description: 'This parameter will skip all the environmental setup piece and just start executing the tests.'),
+			string(name: 'release', defaultValue: 'r9int',description: ''),
+			string(name: 'cluster_id', defaultValue: '50', description: ''),
+			string(name: 'db_server', defaultValue: 'kacd02-prf05-ins01-wfm07-dbs-01.int.acd.mykronos.com', description: ''),
+			string(name: 'db_name', defaultValue: 'ppas_50k', description: ''),
+			booleanParam(name: 'destroy_wfm', defaultValue: true, description: 'Check this if you want to destroy the existing wfm.'),
+			string(name: 'wfc_stream', defaultValue: 'r9int',description: ''),
+			string(name: 'web_stream', defaultValue: 'r9int', description: ''),
+			choice(name: 'environment_name', choices: ['PRF - Performance']),
+			string(name: 'unique_tag', defaultValue: 'perf_SL', description: 'Unique tag to identify the WFMs in a particular environment. For Performnace Shift Left, unique tag will be "perf_SL". For Performnace Core, unique tag will be "perf_Core". For Performnace 500K, unique tag will be "perf_500K".'),
+			string(name: 'extra_inputs', defaultValue: '''{"instance_id": "50", "redis_hosts": "kacd02-prf05-ins01-wfm06-dmc-1.int.acd.mykronos.com:26379,kacd02-prf05-ins01-wfm06-dmc-2.int.acd.mykronos.com:26381,kacd02-prf05-ins01-wfm06-dmc-3.int.acd.mykronos.com:26382", "redis_master": "kacd02-prf05-ins01-wfm06-dmc-1.int.acd.mykronos.com", "enable_monitoring": "True","build_level_dfi": "r9int","docker_build_level_ilb": "r9int","sa_num": "bck=1,bgp=1,bgi=0,fnt=1,api=1,udm=0","datastx_analytic_nodes":"kacd02-prf05-ins01-fcs05-nsq-1.int.acd.mykronos.com","astra_zdm_nodes":"","sch_redis_hosts":"","sch_redis_master":""}'''),
+
+			separator(name: "neload_test_details", sectionHeader: "ACD HA WFM details.",
+				separatorStyle: "border-width: 0",
+				sectionHeaderStyle: """
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				"""
+			),
+			string(name: 'branch', defaultValue: 'develop', description: 'Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where all the scripts are located. All the code and all the Neoload scripts should be in the same branch'),
+			string(name: 'submitter', defaultValue: 'tulika.kumari@ukg.com,abhishek.jain@ukg.com,arash.yamin@ukg.com,doug.tilkin@ukg.com,john.woolley@ukg.com,karl.paxton@ukg.com,lilin.tan@ukg.com,mahdi.alhady@ukg.com,,moses.chang@ukg.com,paul.sullivan@ukg.com,saurabh.tyagi@ukg.com,thara.vadakkeveedu@ukg.com,hingtung.tsang@ukg.com,tri.la@ukg.com,vishwanth.krish@ukg.com', description: 'As firstname.lastname@kronos.com'),
+			string(name: 'nmon_iteration', defaultValue: '12600', description: 'Can not be empty'),
+			string(name: 'nmon_interval', defaultValue: '2', description: 'Can not be empty'),
+
+			separator(name: "warm_up_script_details", sectionHeader: "Details of Warm Up Neoload script, leave these empty to skip.",
+				separatorStyle: "border-width: 0",
+				sectionHeaderStyle: """
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				"""
+			),
+			string(name: 'warmup_project_path', defaultValue: "SL_50k_Warmup_PublicAPI", description: 'Path of a zip file containing .nlp file, relative to the workspace. Bitbucket branch of project https://engstash.int.kronos.com/projects/PER/repos/neoload where warmup scripts are located.'),
+			string(name: 'warmup_scenario', defaultValue: '50k_Combined_Warmup', description: 'Name of warmup scenario in the project, in case of multiple scenarios please input comma separated values.'),
+			string(name: 'warmup_users_count', defaultValue: '301', description: 'User count for license'),
+			string(name: 'warmup_lg', defaultValue: '8', description: 'LG required'),
+
+			separator(name: "database_script_details", sectionHeader: "Details of Database script, leave these empty to skip.",
+				separatorStyle: "border-width: 0",
+				sectionHeaderStyle: """
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				"""
+			),
+			string(name: 'pre_db_script_path', defaultValue: "bin/sqlscript/50k_sl_prevalidation", description: 'Path relative "performance/bin" directory'),
+			string(name: 'post_db_script_path', defaultValue: "bin/sqlscript/50k_sl_postvalidation", description: 'Path relative "performance/bin" directory'),
+
+			separator(name: "test_details", sectionHeader: "Details of Main 50K Test. Leave these empty to skip",
+				separatorStyle: "border-width: 0",
+				sectionHeaderStyle: """
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				"""
+			),
+			string(name: 'ZipFileName', defaultValue: 'PublicRegressionAPIs', description: 'The name of the zip file contain your jmx file, batch file and seed data without .zip'),
+            string(name: 'BatchFileName', defaultValue: 'RunPublicRegressionTestAPIs', description: 'Name of the batch file for JMeter Execution without the .bat'),
+			string(name: 'Scheduling_ZipFileName', defaultValue: 'HC_PublicRegressionAPIs', description: 'The name of the zip file contain your jmx file, batch file and seed data without .zip'),
+            string(name: 'Scheduling_BatchFileName', defaultValue: 'RunHCPublicRegressionTestAPIs', description: 'Name of the batch file for JMeter Execution without the .bat'),
+			string(name: 'test_project_path', defaultValue: "SL_50k_MainTest", description: 'Provide the path of the zip file which contains the .nlp file, relative to the Git Repository'),
+			string(name: 'test_scenario', defaultValue: '50k_Combined_MainTest', description: 'Provide the Scenario Name which needs to be executed, in case of multiple scenarios, input comma-separated values.'),
+			string(name: 'test_users_count', defaultValue: '510', description: 'Provide the number of users for which the license needs to be leased.'),
+			string(name: 'test_lg', defaultValue: '12', description: 'Provide the number of LG'),
+
+			separator(name: "WFM_details", sectionHeader: "Details of 50k WFM",
+				separatorStyle: "border-width: 0",
+				sectionHeaderStyle: """
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				"""
+			),
+			string(name: 'db_cluster', defaultValue: '07', description: 'Provide Db Cluster ID'),
+			separator(name: "revert_details", sectionHeader: "Details of 50k Revert Test Script. Leave these empty to skip",
+				separatorStyle: "border-width: 0",
+				sectionHeaderStyle: """
+					background-color: #dbdb8e;
+					text-align: center;
+					padding: 4px;
+					color: #343434;
+					font-size: 22px;
+					font-weight: normal;
+					text-transform: uppercase;
+					font-family: 'Orienta', sans-serif;
+					letter-spacing: 1px;
+				"""
+			),
+			string(name: 'revert_project_path', defaultValue: "Reverts", description: 'Provide the path of the zip file which contains the .nlp file, relative to the Git Repository'),
+			string(name: 'revert_scenario', defaultValue: '50k_Revert', description: 'Provide the Scenario Name which needs to be executed, in case of multiple scenarios, input comma-separated values.'),
+			string(name: 'revert_users_count', defaultValue: '220', description: 'Provide the number of users for which the license needs to be leased.'),
+			string(name: 'revert_lg', defaultValue: '10', description: 'Provide the the lg'),
+	])])  
+	
+def allservers
+def fnt = []
+def bck = []
+def api = []
+def bgp = []
+def dmc = []
+def dmq = []
+def ins_dmq = []
+def db = []
+def db_server
+def db_name
+def execution_name
+	timestamps {
+    // some block
+}
+
+//MAIN execution
+	// Step 1: Clean the Workspace
+		workspaceClean()
+	// Step 2: Download the PInt Code
+    	codeCheckOut()
+
+	// Step 3: Deploy the WFM (this is conditional)
+		if(params.deploy_wfm) {
+        	execution_name = deployWFM()
+    	} else {
+        	execution_name = "WFM_HA_PIPELINE [wfm_50] [ins_50] [perf_SL]"
+    	}
+	
+	// Step 4: Fetch the WFM Details through Right Scale API
+		findDeploymentDetails(execution_name)
+		fnt += env.fnt
+		bck += env.bck
+		api += env.api
+		bgp += env.bgp
+		db_server = params.db_server
+		db_name = env.db_name
+
+		if(params.skip_setup) {
+			// Find all the servers and add to the list
+			allservers = findAllServers()
+
+			//WFM nodes are duplicated in the list
+			allservers = allservers.toList().toSet().toList()
+			println "after removing duplicates: " + allservers
+			allservers.each {
+				if (it.contains('-dbs-')) db += it
+				else if (it.contains('-dmc-')) dmc += it
+				else if (it.matches(".*?-ins[\\d]+-dmq.*?")) ins_dmq += it
+				else if (!it.matches(".*?-ins[\\d]+-dmq.*?") &amp;&amp; it.contains("dmq")) dmq += it
+			}
+
+			println "fnt: ${fnt.toString()}\n bck: ${bck.toString()}\n bgp: ${bgp.toString()}\n api: ${api.toString()}\n db:${db.toString()}\n"
+			println "dmc: ${dmc.toString()}\n dmq: ${dmq.toString()}\n ins_dmq: ${ins_dmq.toString()}\n"
+			if(!fnt || !bck || !bgp || !api || !db || !dmc || !ins_dmq || !dmq || !db_server || !db_name)
+				throw new Exception("None of the values can be empty!!")
+			env.dmc = dmc.join(',')
+			env.ins_dmq = ins_dmq.join(',')
+			env.dmq = dmq.join(',')
+		} else {
+			// Create engperfuser to the WFM Nodes and the database servers - based on the above details
+			createWFMUsers()
+
+			// Restart the Splunk
+			restartSplunk()
+
+			// Start the datadog agent
+			enableDatadog()
+
+			// Find all the servers and add to the list
+			allservers = findAllServers()
+
+			//WFM nodes are duplicated in the list
+			allservers = allservers.toList().toSet().toList()
+			println "after removing duplicates: " + allservers
+			allservers.each {
+				if (it.contains('-dbs-')) db += it
+				else if (it.contains('-dmc-')) dmc += it
+				else if (it.matches(".*?-ins[\\d]+-dmq.*?")) ins_dmq += it
+				else if (!it.matches(".*?-ins[\\d]+-dmq.*?") &amp;&amp; it.contains("dmq")) dmq += it
+			}
+
+			println "fnt: ${fnt.toString()}\n bck: ${bck.toString()}\n bgp: ${bgp.toString()}\n api: ${api.toString()}\n db:${db.toString()}\n"
+			println "dmc: ${dmc.toString()}\n dmq: ${dmq.toString()}\n ins_dmq: ${ins_dmq.toString()}\n"
+			if(!fnt || !bck || !bgp || !api || !db || !dmc || !ins_dmq || !dmq || !db_server || !db_name)
+				throw new Exception("None of the values can be empty!!")
+			env.dmc = dmc.join(',')
+			env.ins_dmq = ins_dmq.join(',')
+			env.dmq = dmq.join(',')
+
+			// Finally add engperfuser to all the deployments
+			createDefaultUsers(allservers)
+
+			// Configure the wfm backend configurations
+			wfmBackendConfig()
+
+			// Clear the Redis cache and start the WFM
+			redisCacheClear()
+		}
+
+	// Perform HealthCheck and install the NMON
+		server_health_check_build_number = healthCheck()
+		env.server_health_check_build_number = server_health_check_build_number
+
+	// Checkout the Neoload Repository
+		Get_Neoload_Repo()
+
+	// Execute the 50K API Test Warmup
+		neoloadwebWarmupTest()
+
+	// Execute the Timekeeping Regression Test and then capture the Splunk data and then prepare the report
+		Jmeter_Execution()
+		Splunk_reg()
+		Regression_Report()
+
+	// Execute the Scheduling Regression Test and then capture the Splunk data and then prepare the report
+		Jmeter_Execution_Scheduling()
+		Splunk_reg_Scheduling()
+		Regression_Report_Scheduling()
+
+	// Execute the pre database script
+		if(params.pre_db_script_path) {
+			preDBScript()
+		}
+
+	// Execute the 50K Public API Main Tests
+		neoloadwebMainTest()
+
+	//Execute the post database script
+		if(params.post_db_script_path) {
+			build_result14_number=postDBScript()
+			env.build_result14_number = build_result14_number
+		}
+
+	// Publish the Artifacts
+		publishArtifacts()
+
+	// Collect the NMON Data and parse the nmon data
+    	nmonCollectionParse()
+
+	// Prepare steady state NMON Result
+		build_result15_number = nmonCpuSteadyState()
+		env.build_result15_number = build_result15_number
+	
+	// Download the WFM and other logs
+		logsDownload()
+
+	// Compare the nmon results with the baseline
+    	build_result19_number = compareCpuBaseline()
+		env.build_result19_number = build_result19_number
+	
+	// Capture the Response time data for 50K Public API Tests from Splunk
+		Splunk()
+	
+	// Execute the Revert Tests Script for 50K
+		neoloadwebRevertTest()
+
+	// Tar the unique folder data
+		tarUniqueFolder()
+
+	// Publish the 50K Test Report
+		publishReport()
+	
+	// Clean the Workspace
+		workspaceClean()
+	}
+	catch (e){
+		notifyFailed()
+ 		currentBuild.result = 'FAILURE'
+	}
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

@@ -1,0 +1,37 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<org.jenkinsci.plugins.workflow.libs.GlobalLibraries plugin="pipeline-groovy-lib@613.v9c41a_160233f">
+  <libraries>
+    <org.jenkinsci.plugins.workflow.libs.LibraryConfiguration>
+      <name>perf-pipeline-library</name>
+      <retriever class="org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever">
+        <scm class="jenkins.plugins.git.GitSCMSource" plugin="git@4.12.1">
+          <id>50d62a78-07c9-4d2f-88bc-f07ef0123bfc</id>
+          <remote>https://engstash.int.kronos.com/scm/per/perf-automation.git</remote>
+          <credentialsId>remote_git_creds</credentialsId>
+          <traits>
+            <jenkins.plugins.git.traits.BranchDiscoveryTrait/>
+            <jenkins.plugins.git.traits.CheckoutOptionTrait>
+              <extension class="hudson.plugins.git.extensions.impl.CheckoutOption">
+                <timeout>60</timeout>
+              </extension>
+            </jenkins.plugins.git.traits.CheckoutOptionTrait>
+            <jenkins.plugins.git.traits.CloneOptionTrait>
+              <extension class="hudson.plugins.git.extensions.impl.CloneOption">
+                <shallow>true</shallow>
+                <noTags>false</noTags>
+                <reference></reference>
+                <timeout>60</timeout>
+                <depth>1</depth>
+                <honorRefspec>false</honorRefspec>
+              </extension>
+            </jenkins.plugins.git.traits.CloneOptionTrait>
+          </traits>
+        </scm>
+      </retriever>
+      <defaultVersion>develop</defaultVersion>
+      <implicit>false</implicit>
+      <allowVersionOverride>true</allowVersionOverride>
+      <includeInChangesets>true</includeInChangesets>
+    </org.jenkinsci.plugins.workflow.libs.LibraryConfiguration>
+  </libraries>
+</org.jenkinsci.plugins.workflow.libs.GlobalLibraries>

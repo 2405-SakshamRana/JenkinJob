@@ -1,0 +1,101 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?><flow-definition plugin="workflow-job@1249.v7d974144cc14">
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.34">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>id</name>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.9">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit/>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2803.v1a_f77ffcc773">
+    <script>// Powered by Infostretch 
+
+timestamps {
+
+node ('10.131.139.65') { 
+    def long start = currentBuild.startTimeInMillis/1000
+    def end
+ 
+
+ 		/*  stage ('Checkout') 
+                    { 
+                       echo "Branch Name: wfm_deploy"   
+                         checkout([$class: 'GitSCM', branches: [[name: 'Vinay']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory' ,relativeTargetDir: 'NeoLoadCode'],[$class: 'CloneOption', depth: 1, noTags: false, honorRefspec: true,  shallow: true ,timeout: 180]], submoduleCfg: [], userRemoteConfigs: [[refspec: '+refs/heads/Vinay:refs/remotes/origin/Vinay', credentialsId: 'remote_git_creds', url: 'https://engstash.int.kronos.com/scm/per/perf-automation.git']]])
+    	}
+*/
+
+stage ('test') 
+                    { 
+                        bat """
+                    cd C:/inetpub/wwwroot/Regression_Noida/n2020/jars/
+                    java -jar "C:/inetpub/wwwroot/Regression_Noida/n2020/jars/ai_latest1.jar" "63829441297925" "{
+"physicalpath":"E:\\app_data\\nmon_utility\\data\\63829441297925\\",
+"website_path":"C:\\inetpub\\wwwroot\\Regression_Noida\\n2020\\jars\\",
+"interval":"1",
+"iteration":"200",
+"download_logs":"no",
+"user":"perf",
+"pass":"perf",
+"job_type":"all",
+"test_type":"ui_manual",
+"dbserver":"dbserver",
+"dbname":"dbname",
+"reh_time":"reh_time",
+"default_user_create":"yes",
+"test_name":"all"
+}"
+"""
+                    }
+ 
+ 
+  stage ('test1') 
+                    {   writeFile(file: 'zorg.txt', text: data)
+                    }
+	/*
+		  stage ('publish_html_report') 
+                    {
+     sh """ 
+                         #!/bin/bash 
+cd NeoLoadCode/Performance/ss_regression/code/
+pwd
+chmod 777 birt_publish.jar
+   java -jar birt_publish.jar $id               
+  """
+	}*/
+	
+           	/*	stage ('Publish HTML Report') {
+                		    
+            	       publishHTML([allowMissing: false,  alwaysLinkToLastBuild: false, keepAll: true, reportDir: "NeoLoadCode/Performance/ss_regression/result/jmeter_html_report/", reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: ''])
+            	    }
+            	    	stage ('Archive'){
+                		archiveArtifacts allowEmptyArchive: false, artifacts: 'NeoLoadCode/Performance/ss_regression/result/jmeter_html_report/**', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+                		archiveArtifacts allowEmptyArchive: false, artifacts: 'NeoLoadCode/Performance/ss_regression/script/script/csv_result/openam.csv', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: false 
+                
+                	}*/
+	
+}
+}</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

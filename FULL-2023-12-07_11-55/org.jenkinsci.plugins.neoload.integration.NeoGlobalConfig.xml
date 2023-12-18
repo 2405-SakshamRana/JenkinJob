@@ -1,0 +1,16 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<org.jenkinsci.plugins.neoload.integration.NeoGlobalConfig_-DescriptorImpl plugin="neoload-jenkins-plugin@2.2.11">
+  <ntsInfo>
+    <org.jenkinsci.plugins.neoload.integration.supporting.NTSServerInfo>
+      <uniqueID>64d5a0be-f61d-4609-ab1a-c63672377a58</uniqueID>
+      <url>http://wfd-tc530.int.kronos.com:8080</url>
+      <loginUser>admin</loginUser>
+      <loginPassword>{AQAAABAAAAAQVYDoq+KfVeOEreftPt+kc962LKxjTMN6sncOjzpzzZ8=}</loginPassword>
+      <label></label>
+      <collabPath></collabPath>
+      <licenseID>MCwCFBPKpem5ckDMZqNUmrH/eZQqzXarAhRo62I0Mlj+GmjQR07vhO51DCoiuQ==</licenseID>
+    </org.jenkinsci.plugins.neoload.integration.supporting.NTSServerInfo>
+  </ntsInfo>
+  <collabInfo/>
+  <defaultExecutable></defaultExecutable>
+</org.jenkinsci.plugins.neoload.integration.NeoGlobalConfig_-DescriptorImpl>

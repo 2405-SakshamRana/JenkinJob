@@ -1,0 +1,14 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<jenkins.plugins.parameter__separator.ParameterSeparatorDefinition_-ParameterSeparatorDescriptor plugin="parameter-separator@1.3">
+  <globalSeparatorStyle></globalSeparatorStyle>
+  <globalSectionHeaderStyle>background-color: #7ea6d3;
+text-align: center;
+padding: 4px;
+color: #343434;
+font-size: 22px;
+font-weight: normal;
+text-transform: uppercase;
+font-family: &apos;Orienta&apos;, sans-serif;
+letter-spacing: 1px;
+font-style: italic;</globalSectionHeaderStyle>
+</jenkins.plugins.parameter__separator.ParameterSeparatorDefinition_-ParameterSeparatorDescriptor>
